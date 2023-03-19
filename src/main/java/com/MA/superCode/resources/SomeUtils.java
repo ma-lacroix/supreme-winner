@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SomeUtils {
-    // Section 1 exercises
+    // Section 1 exercises to get warmed up
 
     public String userName;
 
