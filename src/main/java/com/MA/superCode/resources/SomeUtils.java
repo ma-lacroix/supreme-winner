@@ -17,13 +17,19 @@ public class SomeUtils {
     }
 
     public void printInitials() {
-        List<String> data = drawInitials();
-        for (String line: data) {
-            System.out.println(line);
+        try {
+            List<String> data = drawInitials();
+            for (String line: data) {
+                System.out.println(line);
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println(e);
+        } finally {
+            System.out.println("All done.");
         }
     }
 
-    public List<String> drawInitials() {
+    public List<String> drawInitials() throws IllegalArgumentException {
         List<String> stuffToPrint = new ArrayList<>();
         stuffToPrint.add("");
         stuffToPrint.add("");
@@ -45,7 +51,7 @@ public class SomeUtils {
                 stuffToPrint.set(3, stuffToPrint.get(3) + "A    A");
                 stuffToPrint.set(4, stuffToPrint.get(4) + "A    A");
             } else {
-                System.out.println("Sorry too lazy to build other letters");
+                throw new IllegalArgumentException("Sorry too lazy to build other letters");
             }
         }
         return stuffToPrint;

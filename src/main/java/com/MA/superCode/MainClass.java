@@ -6,7 +6,7 @@ public class MainClass {
 
     public static void main(String[] args) {
 
-        SomeUtils someUtils = new SomeUtils("MA");
+        SomeUtils someUtils = new SomeUtils("GR");
         someUtils.printInitials();
     }
 }
