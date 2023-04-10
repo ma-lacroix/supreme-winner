@@ -14,6 +14,6 @@ public class PrintResult {
         for (Character c: guesses) {
             System.out.print(c + " ");
         }
-        System.out.println("\n ******** ");
+        System.out.println("\n");
     }
 }

@@ -13,21 +13,28 @@ public class GameLogic {
     private boolean gameOn;
     private int healthPoints;
     private int correctGuesses;
-    private List<String> words = new ArrayList<>(Arrays
-            .asList("hello","yellow","something"));
-    private List<Character> guesses;
-    private String word;
-    private Map<Character, List<Integer>> inv;
-    private Random randomizer = new Random();
+    private List<String> words;
+    private final List<Character> guesses;
+    private final String word;
+    private final Map<Character, List<Integer>> inv;
+    private final Random randomizer = new Random();
+    private PrintResult printResult = new PrintResult();
 
     public GameLogic() {
         this.gameOn = true;
         this.healthPoints = 5;
-        this.words = words;
+        this.words = initWords();
         this.word = words.get(randomizer.nextInt(words.size()));
         this.correctGuesses = word.length() - 1;
         this.guesses = initGuesses();
         this.inv = initInv();
+        this.printResult = printResult;
+    }
+
+    public List<String> initWords() {
+        // TODO: fetch data somewhere to add more words
+         return new ArrayList<>(Arrays
+                 .asList("hello","yellow","something", "jumbo"));
     }
 
     public List<Character> initGuesses() {
@@ -42,7 +49,7 @@ public class GameLogic {
         Map<Character, List<Integer>> inv = new HashMap<>();
         for (int i = 0; i < word.length(); i++) {
             if (!inv.containsKey(word.charAt(i))) {
-                inv.put(word.charAt(i), new ArrayList<>(Arrays.asList(i)));
+                inv.put(word.charAt(i), new ArrayList<>(List.of(i)));
             }else{
                 inv.get(word.charAt(i)).add(i);
             }
@@ -50,20 +57,12 @@ public class GameLogic {
         return inv;
     }
 
-    public String getWord() {
-        return word;
-    }
-
-    public List<Character> getGuesses() {
-        return guesses;
-    }
-
-    public int getHealthPoints() {
-        return healthPoints;
-    }
-
     public boolean getGameOn() {
         return gameOn;
+    }
+
+    public void initialPrint() {
+        PrintResult.printGuesses(guesses);
     }
 
     public void handleUserInput(char c) {
@@ -76,6 +75,7 @@ public class GameLogic {
             gameOn = false;
         }
         doesWordContainChar(c);
+        PrintResult.printGuesses(guesses);
     }
 
     public void doesWordContainChar(char c) {
@@ -85,6 +85,7 @@ public class GameLogic {
                 correctGuesses--;
             }
         } else {
+            System.out.println("Try again!");
             healthPoints--;
         }
     }
