@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-public class HandleGameInput {
+public class GameLogic {
     // Before the game starts, this class is called to handle the input of the game
     // Let's say it's a collection of random words
     private boolean gameOn;
@@ -20,9 +20,9 @@ public class HandleGameInput {
     private Map<Character, List<Integer>> inv;
     private Random randomizer = new Random();
 
-    public HandleGameInput() {
+    public GameLogic() {
         this.gameOn = true;
-        this.healthPoints = 10;
+        this.healthPoints = 5;
         this.words = words;
         this.word = words.get(randomizer.nextInt(words.size()));
         this.correctGuesses = word.length() - 1;
