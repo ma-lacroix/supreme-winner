@@ -2,7 +2,9 @@ package com.MA.superCode.hangman;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class HandleGameInput {
@@ -15,6 +17,7 @@ public class HandleGameInput {
             .asList("hello","yellow","something"));
     private List<Character> guesses;
     private String word;
+    private Map<Character, List<Integer>> inv;
     private Random randomizer = new Random();
 
     public HandleGameInput() {
@@ -24,14 +27,7 @@ public class HandleGameInput {
         this.word = words.get(randomizer.nextInt(words.size()));
         this.correctGuesses = word.length() - 1;
         this.guesses = initGuesses();
-    }
-
-    public String getWord() {
-        return word;
-    }
-
-    public List<Character> getGuesses() {
-        return guesses;
+        this.inv = initInv();
     }
 
     public List<Character> initGuesses() {
@@ -39,6 +35,26 @@ public class HandleGameInput {
         for (int i = 0; i < word.length(); i++) {
             guesses.add('-');
         }
+        return guesses;
+    }
+
+    private Map<Character, List<Integer>> initInv() {
+        Map<Character, List<Integer>> inv = new HashMap<>();
+        for (int i = 0; i < word.length(); i++) {
+            if (!inv.containsKey(word.charAt(i))) {
+                inv.put(word.charAt(i), new ArrayList<>(Arrays.asList(i)));
+            }else{
+                inv.get(word.charAt(i)).add(i);
+            }
+        }
+        return inv;
+    }
+
+    public String getWord() {
+        return word;
+    }
+
+    public List<Character> getGuesses() {
         return guesses;
     }
 
@@ -63,11 +79,11 @@ public class HandleGameInput {
     }
 
     public void doesWordContainChar(char c) {
-        // TODO: if character is found more than once, won't work!
-        int ind = word.indexOf(c);
-        if (ind != -1) {
-            guesses.set(ind, c);
-            correctGuesses--;
+        if (inv.containsKey(c)) {
+            for (int ind: inv.get(c)) {
+                guesses.set(ind, c);
+                correctGuesses--;
+            }
         } else {
             healthPoints--;
         }
