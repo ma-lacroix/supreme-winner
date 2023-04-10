@@ -8,27 +8,28 @@ import java.util.Map;
 import java.util.Random;
 
 public class GameLogic {
-    // Before the game starts, this class is called to handle the input of the game
-    // Let's say it's a collection of random words
+    // Handles the game loop
     private boolean gameOn;
     private int healthPoints;
     private int correctGuesses;
     private List<String> words;
-    private final List<Character> guesses;
+    private List<Character> guesses;
+    private List<Character> misses;
     private final String word;
     private final Map<Character, List<Integer>> inv;
     private final Random randomizer = new Random();
-    private PrintResult printResult = new PrintResult();
+    private PrintResult printResult;
 
     public GameLogic() {
         this.gameOn = true;
-        this.healthPoints = 5;
+        this.healthPoints = 8;
         this.words = initWords();
         this.word = words.get(randomizer.nextInt(words.size()));
         this.correctGuesses = word.length() - 1;
         this.guesses = initGuesses();
+        this.misses = new ArrayList<>();
         this.inv = initInv();
-        this.printResult = printResult;
+        this.printResult = new PrintResult();
     }
 
     public List<String> initWords() {
@@ -62,7 +63,7 @@ public class GameLogic {
     }
 
     public void initialPrint() {
-        PrintResult.printGuesses(guesses);
+        printResult.printList(guesses);
     }
 
     public void handleUserInput(char c) {
@@ -75,7 +76,7 @@ public class GameLogic {
             gameOn = false;
         }
         doesWordContainChar(c);
-        PrintResult.printGuesses(guesses);
+        printResultsInConsole();
     }
 
     public void doesWordContainChar(char c) {
@@ -86,7 +87,16 @@ public class GameLogic {
             }
         } else {
             System.out.println("Try again!");
+            misses.add(c);
             healthPoints--;
         }
+    }
+
+    public void printResultsInConsole() {
+        System.out.println("Your word so far: ");
+        printResult.printList(guesses);
+        System.out.println("Your misses so far: ");
+        printResult.printList(misses);
+        printResult.printHangMan(healthPoints);
     }
 }
