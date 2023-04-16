@@ -7,7 +7,7 @@ import java.util.Scanner;
 public class MainClass {
 
     public static void main(String[] args) {
-        GameLogic gameLogic = new GameLogic();
+        GameLogic gameLogic = new GameLogic(8);
         Scanner s = new Scanner(System.in);
         System.out.println("Start Game\nHere is your word: ");
         gameLogic.initialPrint();

@@ -20,9 +20,9 @@ public class GameLogic {
     private final Random randomizer = new Random();
     private PrintResult printResult;
 
-    public GameLogic() {
+    public GameLogic(int healthPoints) {
         this.gameOn = true;
-        this.healthPoints = 8;
+        this.healthPoints = healthPoints;
         this.words = initWords();
         this.word = words.get(randomizer.nextInt(words.size()));
         this.correctGuesses = word.length() - 1;
@@ -46,7 +46,7 @@ public class GameLogic {
         return guesses;
     }
 
-    private Map<Character, List<Integer>> initInv() {
+    public Map<Character, List<Integer>> initInv() {
         Map<Character, List<Integer>> inv = new HashMap<>();
         for (int i = 0; i < word.length(); i++) {
             if (!inv.containsKey(word.charAt(i))) {
