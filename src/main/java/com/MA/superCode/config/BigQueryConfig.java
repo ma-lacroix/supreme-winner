@@ -5,8 +5,6 @@ import com.google.cloud.bigquery.BigQueryOptions;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.Serializable;
-
 @Getter
 @Setter
 public class BigQueryConfig {

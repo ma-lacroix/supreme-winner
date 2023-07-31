@@ -41,6 +41,7 @@ public class BigQueryMain {
     }
 
     public void printQueryResults(TableResult tableResult, QueryRequest queryRequest ) {
+        System.out.println("*** " + queryRequest.getQueryName() + " ***");
         for (FieldValueList row : tableResult.iterateAll()) {
             StringBuilder data = new StringBuilder();
             for (String col: queryRequest.getResultsColumns()) {
