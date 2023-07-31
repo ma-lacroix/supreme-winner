@@ -9,9 +9,7 @@ import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.JobStatus;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableResult;
-import jdk.jshell.Snippet;
 
-import java.sql.ResultSet;
 import java.util.UUID;
 
 public class BigQueryMain {
@@ -37,18 +35,19 @@ public class BigQueryMain {
             status = queryJob.getStatus();
         }
         if (queryJob.getStatus().getError() != null) {
-            // You can also look at queryJob.getStatus().getExecutionErrors() for all
-            // errors, not just the latest one.
             throw new RuntimeException(queryJob.getStatus().getError().toString());
         }
         return queryJob.getQueryResults();
     }
 
-    public void printQueryResults(TableResult tableResult) {
+    public void printQueryResults(TableResult tableResult, QueryRequest queryRequest ) {
         for (FieldValueList row : tableResult.iterateAll()) {
-            String url = row.get("url").getStringValue();
-            String viewCount = row.get("view_count").getStringValue();
-            System.out.printf("%s : %s views\n", url, viewCount);
+            StringBuilder data = new StringBuilder();
+            for (String col: queryRequest.getResultsColumns()) {
+                data.append(row.get(col).getStringValue());
+                data.append(" ");
+            }
+            System.out.println(data);
         }
     }
 }
