@@ -3,7 +3,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.MA.superCode</groupId>
+    <groupId>com.MA.winner</groupId>
     <artifactId>supreme-winner</artifactId>
     <version>1.0-SNAPSHOT</version>
 
@@ -12,17 +12,6 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.google.cloud</groupId>
-                <artifactId>libraries-bom</artifactId>
-                <version>25.1.0</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -47,10 +36,6 @@
             <version>1.18.28</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>google-cloud-bigquery</artifactId>
-        </dependency>
 
     </dependencies>
 
@@ -63,7 +48,7 @@
                     <archive>
                         <manifest>
                             <mainClass>
-                                com.MA.superCode.MainClass
+                                com.MA.winner.MainClass
                             </mainClass>
                         </manifest>
                     </archive>
