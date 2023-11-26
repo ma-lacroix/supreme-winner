@@ -8,7 +8,7 @@ import java.net.HttpURLConnection;
 
 public class ApiUtils {
 
-    public static void makeHTTPcall(String URLString) throws IOException {
+    public void makeHTTPcall(String URLString) throws IOException {
         URL url = new URL(URLString);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");

@@ -6,8 +6,6 @@ import lombok.Setter;
 
 import java.io.IOException;
 
-import static com.MA.winner.utils.ApiUtils.makeHTTPcall;
-
 @Getter
 @Setter
 @Builder
@@ -23,8 +21,8 @@ public class YahooStockPriceRequests {
         this.endDate = endDate;
     }
 
-    public void makeCall() throws IOException {
-        makeHTTPcall("https://query1.finance.yahoo.com/v7/finance/download/" + ticker +
-                "?period1=" + startDate + "&period2=" + endDate + "&interval=1d&events=history");
+    public String getTickerDataURL() throws IOException {
+        return "https://query1.finance.yahoo.com/v7/finance/download/" + ticker +
+                "?period1=" + startDate + "&period2=" + endDate + "&interval=1d&events=history";
     }
 }
