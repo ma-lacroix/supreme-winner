@@ -1,6 +1,7 @@
 package com.MA.winner.localDataStorage;
 
 import com.MA.winner.localDataStorage.models.YahooStockPriceRequests;
+import com.MA.winner.localDataStorage.models.YahooStockPriceResponse;
 import com.MA.winner.utils.ApiUtils;
 
 import java.io.IOException;
@@ -19,8 +20,8 @@ public class ExternalDataSourceHandler {
         this.apiUtils = new ApiUtils();
     }
 
-    public void runAnalysis() throws IOException {
-        apiUtils.makeHTTPcall(yahooStockPriceRequests.getTickerDataURL());
+    public YahooStockPriceResponse runAnalysis() throws IOException {
+        return apiUtils.makeHTTPcall(yahooStockPriceRequests.getTickerDataURL());
     }
 
 }
