@@ -11,9 +11,10 @@ public class MainClass {
         // tests
         ExternalDataSourceHandler externalDataSourceHandler = new ExternalDataSourceHandler("BKNG",
                 "2023-11-20", "2023-12-01");
-        YahooStockPriceResponse yahooStockPriceResponse = externalDataSourceHandler.runAnalysis();
-        for (String key: yahooStockPriceResponse.getCols()) {
-            System.out.println(key + " " + yahooStockPriceResponse.getStockData().get(key).toString());
-        }
+        externalDataSourceHandler.makeCurl();
+//        YahooStockPriceResponse yahooStockPriceResponse = externalDataSourceHandler.runAnalysis();
+//        for (String key: yahooStockPriceResponse.getCols()) {
+//            System.out.println(key + " " + yahooStockPriceResponse.getStockData().get(key).toString());
+//        }
     }
 }

@@ -40,5 +40,27 @@ public class ApiUtils {
         }
     }
 
+    public void makeCurlCall(String url) {
+        try {
+            String command = "curl " + url;
+
+            ProcessBuilder processBuilder = new ProcessBuilder(command.split("\\s+"));
+            Process process = processBuilder.start();
+
+            // Read the output of the command
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            // Wait for the process to finish
+            int exitCode = process.waitFor();
+            System.out.println("Exit Code: " + exitCode);
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }
 
