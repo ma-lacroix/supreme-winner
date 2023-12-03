@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,15 +11,15 @@ import java.util.Map;
 
 @Getter
 @Setter
-public class YahooStockPriceResponse {
+public class StockDataResponse {
 
     private Map<String, List<String>> stockData;
 
     private List<String> cols;
 
-    public YahooStockPriceResponse() {
+    public StockDataResponse(List<String> cols) {
         this.stockData = new HashMap<>();
-        this.cols = Arrays.asList("Date","Open","High","Low","Close","Adj Close","Volume");
+        this.cols = cols;
         for (String col: cols){
             stockData.put(col, new ArrayList<>());
         }
