@@ -2,6 +2,9 @@ package com.MA.winner.localDataStorage;
 
 import com.MA.winner.localDataStorage.models.YahooStockPriceRequests;
 import com.MA.winner.localDataStorage.models.StockDataResponse;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.BufferedReader;
 import java.io.IOException;

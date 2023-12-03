@@ -14,8 +14,8 @@ public class AllTickersDataHandler {
     public StockDataResponse getAllTickers() {
 
         Sp500tickerNamesRequest sp500tickerNamesRequest = new Sp500tickerNamesRequest();
-        StockDataResponse stockDataResponse = new StockDataResponse(Arrays.asList("Symbol","Security","GICS Sector",
-                "GICS Sub-Industry"));
+        StockDataResponse stockDataResponse = new StockDataResponse(Arrays.asList("Symbol","Security","Sector",
+                "Industry"));
         try {
             String command = "curl " + sp500tickerNamesRequest.getUrl();
 

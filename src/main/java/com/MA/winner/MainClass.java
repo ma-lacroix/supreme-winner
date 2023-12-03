@@ -1,29 +1,20 @@
 package com.MA.winner;
 
-import com.MA.winner.localDataStorage.AllTickersDataHandler;
-import com.MA.winner.localDataStorage.TickerDataHandler;
-import com.MA.winner.localDataStorage.models.StockDataResponse;
+import com.MA.winner.localDataStorage.AnalysisDataHandler;
+import com.MA.winner.localDataStorage.models.StocksRawData;
 
 import java.io.IOException;
 
-import static com.MA.winner.utils.Utils.printResults;
 
 public class MainClass {
 
     public static void main(String[] args) throws IOException {
         System.out.println("Application starts...");
 
-        // TODO: these are tests only
-        AllTickersDataHandler allTickersDataHandler = new AllTickersDataHandler();
-        StockDataResponse sp500tickerNamesResponse =  allTickersDataHandler.getAllTickers();
-        printResults(sp500tickerNamesResponse);
-
-        // TODO: these are tests only
-        TickerDataHandler tickerDataHandler = new TickerDataHandler("BKNG",
-                "2023-11-20", "2023-12-01");
-        StockDataResponse yahooStockPriceResponse = tickerDataHandler.getTickerData();
-        printResults(yahooStockPriceResponse);
-
+        // TODO: tests
+        AnalysisDataHandler analysisDataHandler = new AnalysisDataHandler("2023-11-01", "2023-11-14","Industrials");
+        StocksRawData stocksRawData = analysisDataHandler.getStocksAnalysisData();
+        System.out.println(stocksRawData.getStocksAnalysisData().toString());
         // TODO: run performance calculations next
     }
 }

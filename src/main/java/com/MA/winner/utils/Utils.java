@@ -1,6 +1,7 @@
 package com.MA.winner.utils;
 
 import com.MA.winner.localDataStorage.models.StockDataResponse;
+import com.MA.winner.localDataStorage.models.StocksRawData;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -11,6 +12,14 @@ public class Utils {
     public static void printResults(StockDataResponse response) {
         for (String key: response.getCols()) {
             System.out.println(key + " " + response.getStockData().get(key).toString());
+        }
+    }
+
+    public static void printStocksRawData(StocksRawData rawData) {
+        for (String key: rawData.getStocksAnalysisData().keySet()) {
+            for (String subKey: rawData.getStocksAnalysisData().get(key).keySet()) {
+                System.out.println(key + " " + subKey + " " + rawData.getStocksAnalysisData().get(key).get(subKey).toString());
+            }
         }
     }
 
