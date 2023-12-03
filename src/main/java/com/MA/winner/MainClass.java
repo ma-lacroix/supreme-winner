@@ -18,6 +18,7 @@ public class MainClass {
         StockDataResponse sp500tickerNamesResponse =  allTickersDataHandler.getAllTickers();
         printResults(sp500tickerNamesResponse);
 
+        // TODO: these are tests only
         TickerDataHandler tickerDataHandler = new TickerDataHandler("BKNG",
                 "2023-11-20", "2023-12-01");
         StockDataResponse yahooStockPriceResponse = tickerDataHandler.getTickerData();
