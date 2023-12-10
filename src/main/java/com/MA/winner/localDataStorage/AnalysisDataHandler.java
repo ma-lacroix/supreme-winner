@@ -10,32 +10,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.MA.winner.utils.Utils.printResults;
-import static com.MA.winner.utils.Utils.printStocksRawData;
-
 public class AnalysisDataHandler {
 
     private static final Logger logger = Logger.getLogger(AnalysisDataHandler.class.getName());
 
     private final AllTickersDataHandler allTickersDataHandler;
+
+    private final Float maxStockValue;
     private final String startDate;
     private final String endDate;
     private final String sector;
 
-    public AnalysisDataHandler(String startDate, String endDate, String sector) {
+    public AnalysisDataHandler(Float maxStockValue, String startDate, String endDate, String sector) {
         this.allTickersDataHandler = new AllTickersDataHandler();
+        this.maxStockValue = maxStockValue;
         this.startDate = startDate;
         this.endDate = endDate;
         this.sector = (sector==null) ? "all" : sector;
     }
 
     public List<String> getSp500Tickers() {
+        logger.info("Getting sp500 tickers");
         if (sector.equals("all")) {
             return allTickersDataHandler.getAllTickers().getStockData().get("Symbol");
         }
         List<String> tickers = new ArrayList<>();
         StockDataResponse data = allTickersDataHandler.getAllTickers();
-        // TODO: log this
         for (int i = 0; i < data.getStockData().get("Sector").size(); i++) {
             if (data.getStockData().get("Sector").get(i).equals(sector)) {
                 tickers.add(data.getStockData().get("Symbol").get(i));
@@ -45,13 +45,18 @@ public class AnalysisDataHandler {
     }
 
     public StocksRawData getStocksAnalysisData() throws IOException {
+        logger.info("Getting stocks data");
         Map<String, Map<String, Float>> stocksAnalysisData = new HashMap<>();
         List<String> tickers = getSp500Tickers();
         for (String ticker: tickers) {
             TickerDataHandler tickerDataHandler = new TickerDataHandler(ticker, startDate, endDate);
             StockDataResponse stockDataResponse = tickerDataHandler.getTickerData();
-            Map<String, Float> stockDescriptiveData = new HashMap<>();
             int len = stockDataResponse.getStockData().get("Date").size();
+            // skipping tickers above budget
+            if (Float.parseFloat(stockDataResponse.getStockData().get("Close").get(len-1)) > maxStockValue) {
+                continue;
+            }
+            Map<String, Float> stockDescriptiveData = new HashMap<>();
             float totalClose = 0;
             float minClose = Float.MAX_VALUE;
             float maxClose = 0;
@@ -76,7 +81,6 @@ public class AnalysisDataHandler {
             stockDescriptiveData.put("minVolume", minVolume);
             stockDescriptiveData.put("maxVolume", maxVolume);
             stockDescriptiveData.put("avgVolume", totalVolume/len);
-            stocksAnalysisData.put(ticker, stockDescriptiveData);
             // standard deviation
             for (int i = 0; i < len; i++) {
                 float close = Float.parseFloat(stockDataResponse.getStockData().get("Close").get(i));
@@ -86,6 +90,7 @@ public class AnalysisDataHandler {
             }
             stockDescriptiveData.put("stdClose", (float) Math.sqrt(totalDeviationClose/len));
             stockDescriptiveData.put("stdVolume", (float) Math.sqrt(totalDeviationVolume/len));
+            stocksAnalysisData.put(ticker, stockDescriptiveData);
         }
         return StocksRawData.builder()
                 .stocksAnalysisData(stocksAnalysisData)
