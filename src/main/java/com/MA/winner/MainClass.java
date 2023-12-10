@@ -14,7 +14,7 @@ public class MainClass {
         System.out.println("Application starts...");
 
         // TODO: tests
-        AnalysisDataHandler analysisDataHandler = new AnalysisDataHandler("2023-11-01", "2023-11-14","Health Care");
+        AnalysisDataHandler analysisDataHandler = new AnalysisDataHandler("2023-11-01", "2023-11-14","Energy");
         StocksRawData stocksRawData = analysisDataHandler.getStocksAnalysisData();
         printStocksRawData(stocksRawData);
         // TODO: run performance calculations next

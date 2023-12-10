@@ -28,7 +28,6 @@ public class AllTickersDataHandler {
             int count = 0;
             while ((line = reader.readLine()) != null) {
                 if (count > 0) {
-                    int len = line.split(",").length;
                     for (int i = 0; i < 4; i++) {
                         stockDataResponse.getStockData().computeIfAbsent(stockDataResponse.getCols().get(i),
                                 s -> new ArrayList<>()).add(line.split(",")[i]);
@@ -36,11 +35,8 @@ public class AllTickersDataHandler {
                 }
                 count++;
             }
-            // Wait for the process to finish
-            int exitCode = process.waitFor();
-            System.out.println("Exit Code: " + exitCode);
 
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return stockDataResponse;
