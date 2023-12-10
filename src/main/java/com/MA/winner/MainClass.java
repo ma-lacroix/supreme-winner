@@ -5,6 +5,8 @@ import com.MA.winner.localDataStorage.models.StocksRawData;
 
 import java.io.IOException;
 
+import static com.MA.winner.utils.Utils.printStocksRawData;
+
 
 public class MainClass {
 
@@ -12,8 +14,9 @@ public class MainClass {
         System.out.println("Application starts...");
 
         // TODO: tests
-        AnalysisDataHandler analysisDataHandler = new AnalysisDataHandler("2023-11-01", "2023-11-14","Industrials");
+        AnalysisDataHandler analysisDataHandler = new AnalysisDataHandler("2023-11-01", "2023-11-14","Health Care");
         StocksRawData stocksRawData = analysisDataHandler.getStocksAnalysisData();
+        printStocksRawData(stocksRawData);
         // TODO: run performance calculations next
     }
 }

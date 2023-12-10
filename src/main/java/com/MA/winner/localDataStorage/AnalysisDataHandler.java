@@ -36,7 +36,6 @@ public class AnalysisDataHandler {
         List<String> tickers = new ArrayList<>();
         StockDataResponse data = allTickersDataHandler.getAllTickers();
         // TODO: log this
-        printResults(data);
         for (int i = 0; i < data.getStockData().get("Sector").size(); i++) {
             if (data.getStockData().get("Sector").get(i).equals(sector)) {
                 tickers.add(data.getStockData().get("Symbol").get(i));
@@ -82,17 +81,14 @@ public class AnalysisDataHandler {
             for (int i = 0; i < len; i++) {
                 float close = Float.parseFloat(stockDataResponse.getStockData().get("Close").get(i));
                 float volume = Float.parseFloat(stockDataResponse.getStockData().get("Volume").get(i));
-                totalDeviationClose += close - stockDescriptiveData.get("avgClose");
-                totalDeviationVolume += volume - stockDescriptiveData.get("avgVolume");
+                totalDeviationClose += (float) Math.pow(close - stockDescriptiveData.get("avgClose"),2);
+                totalDeviationVolume += (float) Math.pow(volume - stockDescriptiveData.get("avgVolume"),2);
             }
             stockDescriptiveData.put("stdClose", (float) Math.sqrt(totalDeviationClose/len));
             stockDescriptiveData.put("stdVolume", (float) Math.sqrt(totalDeviationVolume/len));
         }
-        StocksRawData stocksRawData = StocksRawData.builder()
+        return StocksRawData.builder()
                 .stocksAnalysisData(stocksAnalysisData)
                 .build();
-        // TODO: log this
-        printStocksRawData(stocksRawData);
-        return stocksRawData;
     }
 }
