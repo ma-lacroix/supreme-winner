@@ -49,7 +49,6 @@ public class AnalysisDataHandler {
         Map<String, Map<String, Float>> stocksAnalysisData = new HashMap<>();
         List<String> tickers = getSp500Tickers();
         for (String ticker: tickers) {
-            logger.info("Data for: " + ticker);
             TickerDataHandler tickerDataHandler = new TickerDataHandler(ticker, startDate, endDate);
             StockDataResponse stockDataResponse = tickerDataHandler.getTickerData();
             Map<String, Float> stockDescriptiveData = new HashMap<>();
@@ -57,9 +56,11 @@ public class AnalysisDataHandler {
             float totalClose = 0;
             float minClose = Float.MAX_VALUE;
             float maxClose = 0;
+            float totalDeviationClose = 0;
             float totalVolume = 0;
             float minVolume = Float.MAX_VALUE;
             float maxVolume = 0;
+            float totalDeviationVolume = 0;
             for (int i = 0; i < len; i++) {
                 float close = Float.parseFloat(stockDataResponse.getStockData().get("Close").get(i));
                 float volume = Float.parseFloat(stockDataResponse.getStockData().get("Volume").get(i));
@@ -77,6 +78,15 @@ public class AnalysisDataHandler {
             stockDescriptiveData.put("maxVolume", maxVolume);
             stockDescriptiveData.put("avgVolume", totalVolume/len);
             stocksAnalysisData.put(ticker, stockDescriptiveData);
+            // standard deviation
+            for (int i = 0; i < len; i++) {
+                float close = Float.parseFloat(stockDataResponse.getStockData().get("Close").get(i));
+                float volume = Float.parseFloat(stockDataResponse.getStockData().get("Volume").get(i));
+                totalDeviationClose += close - stockDescriptiveData.get("avgClose");
+                totalDeviationVolume += volume - stockDescriptiveData.get("avgVolume");
+            }
+            stockDescriptiveData.put("stdClose", (float) Math.sqrt(totalDeviationClose/len));
+            stockDescriptiveData.put("stdVolume", (float) Math.sqrt(totalDeviationVolume/len));
         }
         StocksRawData stocksRawData = StocksRawData.builder()
                 .stocksAnalysisData(stocksAnalysisData)

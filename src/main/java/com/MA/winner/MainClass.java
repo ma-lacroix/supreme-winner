@@ -14,7 +14,6 @@ public class MainClass {
         // TODO: tests
         AnalysisDataHandler analysisDataHandler = new AnalysisDataHandler("2023-11-01", "2023-11-14","Industrials");
         StocksRawData stocksRawData = analysisDataHandler.getStocksAnalysisData();
-        System.out.println(stocksRawData.getStocksAnalysisData().toString());
         // TODO: run performance calculations next
     }
 }
