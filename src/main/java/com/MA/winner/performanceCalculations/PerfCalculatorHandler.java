@@ -29,7 +29,7 @@ public class PerfCalculatorHandler {
         this.stocksRawData = stocksRawData;
         this.totalBudget = totalBudget;
         this.defaultPortfolioReturn = 0.03f;
-        this.maxSharpeValue = -1.0f;
+        this.maxSharpeValue = -Float.MAX_VALUE;
         this.bestPortfolio = new HashMap<>();
         this.maxNumOfStocks = new HashMap<>();
     }
@@ -57,15 +57,19 @@ public class PerfCalculatorHandler {
         for (int i = 0; i < tickers.length; i++) {
             budgetLeft -= stocksRawData.getStocksAnalysisData().get(tickers[i]).get("avgClose") * weights[i];
         }
-        return (budgetLeft <= totalBudget * 1.1 && budgetLeft >= totalBudget *0.9);
+        return (budgetLeft <= totalBudget * 0.1 && budgetLeft >= - totalBudget * 0.1);
     }
 
     public float getSharpeRatio(Integer[] weights, List<Float> returns, List<Float> risks) {
         float numerator = 0.0f;
         float denominator = 0.0f;
+        int totalWeights = 0;
+        for (Integer weight : weights) {
+            totalWeights += weight;
+        }
         for (int i = 0; i < weights.length; i++) {
-            numerator += weights[i] * (returns.get(i) - defaultPortfolioReturn);
-            denominator += weights[i] * risks.get(i);
+            numerator += weights[i] * (returns.get(i) - defaultPortfolioReturn) / totalWeights;
+            denominator += weights[i] * risks.get(i) / totalWeights;
         }
         return numerator/denominator;
     }
@@ -80,9 +84,7 @@ public class PerfCalculatorHandler {
     public void solve(String[] tickers, Integer[] weights, int index) {
         // base case needs to be improved
         if (index == tickers.length) {
-            logger.info("Trying: " + Arrays.toString(weights));
             if (isWithinBudget(tickers, weights)) {
-                logger.info(Arrays.toString(weights));
                 List<Float> returns = getReturns(tickers);
                 List<Float> risks = getRisks(tickers);
                 float sharpe = getSharpeRatio(weights, returns, risks);
