@@ -78,8 +78,11 @@ public class PerfCalculatorHandler {
     }
 
     public void solve(String[] tickers, Integer[] weights, int index) {
+        // base case needs to be improved
         if (index == tickers.length) {
+            logger.info("Trying: " + Arrays.toString(weights));
             if (isWithinBudget(tickers, weights)) {
+                logger.info(Arrays.toString(weights));
                 List<Float> returns = getReturns(tickers);
                 List<Float> risks = getRisks(tickers);
                 float sharpe = getSharpeRatio(weights, returns, risks);
