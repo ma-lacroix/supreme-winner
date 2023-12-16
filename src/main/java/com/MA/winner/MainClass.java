@@ -13,12 +13,9 @@ public class MainClass {
 
     public static void main(String[] args) throws IOException {
         System.out.println("Application starts...");
-
-        // TODO: tests
-        AnalysisDataHandler analysisDataHandler = new AnalysisDataHandler(50.0f, "2023-11-01", "2023-11-14","Energy");
+        AnalysisDataHandler analysisDataHandler = new AnalysisDataHandler(100.0f, "2023-11-01", "2023-11-14","Information Technology");
         StocksRawData stocksRawData = analysisDataHandler.getStocksAnalysisData();
-        printStocksRawData(stocksRawData);
-        PerfCalculatorHandler perfCalculatorHandler = new PerfCalculatorHandler(stocksRawData, 500.0f);
-        // TODO: run calculations
+        PerfCalculatorHandler perfCalculatorHandler = new PerfCalculatorHandler(stocksRawData, 1000.0f);
+        perfCalculatorHandler.fetchBestPortfolio();
     }
 }

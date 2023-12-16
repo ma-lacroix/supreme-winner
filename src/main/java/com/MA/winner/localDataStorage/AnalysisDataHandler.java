@@ -56,6 +56,7 @@ public class AnalysisDataHandler {
             if (Float.parseFloat(stockDataResponse.getStockData().get("Close").get(len-1)) > maxStockValue) {
                 continue;
             }
+            // TODO: missing -> ROIs
             Map<String, Float> stockDescriptiveData = new HashMap<>();
             float totalClose = 0;
             float minClose = Float.MAX_VALUE;
@@ -75,9 +76,12 @@ public class AnalysisDataHandler {
                 minVolume = Math.min(volume, minVolume);
                 maxVolume = Math.max(volume, maxVolume);
             }
+            float roi = Float.parseFloat(stockDataResponse.getStockData().get("Close").get(len-1))/
+                    Float.parseFloat(stockDataResponse.getStockData().get("Close").get(0)) - 1;
             stockDescriptiveData.put("minClose", minClose);
             stockDescriptiveData.put("maxClose", maxClose);
             stockDescriptiveData.put("avgClose", totalClose/len);
+            stockDescriptiveData.put("avgReturn", roi);
             stockDescriptiveData.put("minVolume", minVolume);
             stockDescriptiveData.put("maxVolume", maxVolume);
             stockDescriptiveData.put("avgVolume", totalVolume/len);
