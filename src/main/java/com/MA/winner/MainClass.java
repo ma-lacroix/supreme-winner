@@ -14,13 +14,13 @@ public class MainClass {
     public static void main(String[] args) throws IOException {
         System.out.println("Application starts...");
         AnalysisDataHandler analysisDataHandler = new AnalysisDataHandler(
-                200.0f,
+                30.0f,
                 "2023-11-01",
                 "2023-12-15",
                 "Real Estate");
         StocksRawData stocksRawData = analysisDataHandler.getStocksAnalysisData();
         printStocksRawData(stocksRawData);
-        PerfCalculatorHandler perfCalculatorHandler = new PerfCalculatorHandler(stocksRawData, 2000.0f);
+        PerfCalculatorHandler perfCalculatorHandler = new PerfCalculatorHandler(stocksRawData, 500.0f);
         perfCalculatorHandler.fetchBestPortfolio();
     }
 }

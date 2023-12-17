@@ -51,11 +51,11 @@ public class PerfCalculatorHandler {
     }
 
     public Float[] getRisks() {
-        Float[] returns = new Float[tickers.length];
+        Float[] risks = new Float[tickers.length];
         for (int i = 0; i < tickers.length; i++) {
-            returns[i] = stocksRawData.getStocksAnalysisData().get(tickers[i]).get("stdClose");
+            risks[i] = stocksRawData.getStocksAnalysisData().get(tickers[i]).get("stdClose");
         }
-        return returns;
+        return risks;
     }
 
     public Boolean stillWiggleRoom(Integer[] weights) {
@@ -63,7 +63,7 @@ public class PerfCalculatorHandler {
         for (int i = 0; i < tickers.length; i++) {
             budgetLeft -= stocksRawData.getStocksAnalysisData().get(tickers[i]).get("avgClose") * weights[i];
         }
-        return (budgetLeft > -(totalBudget * 0.1));
+        return budgetLeft > 0.0f;
     }
 
     public Boolean isWithinBudget(Integer[] weights) {
@@ -72,7 +72,7 @@ public class PerfCalculatorHandler {
         for (int i = 0; i < tickers.length; i++) {
             budgetLeft -= stocksRawData.getStocksAnalysisData().get(tickers[i]).get("avgClose") * weights[i];
         }
-        return (budgetLeft <= totalBudget * 0.1 && budgetLeft >= - totalBudget * 0.1);
+        return (budgetLeft >= -(totalBudget * 0.1f) && budgetLeft <= totalBudget * 0.1f);
     }
 
     public float getSharpeRatio(Integer[] weights) {
@@ -97,20 +97,18 @@ public class PerfCalculatorHandler {
     }
 
     public void solve(Integer[] weights, int index) {
-        // base case needs to be improved
-        if (index == tickers.length) {
-            if (isWithinBudget(weights)) {
-                float sharpe = getSharpeRatio(weights);
-                System.out.println(sharpe);
-                if (sharpe > maxSharpeValue) {
-                    overrideBestPortfolio(weights);
-                }
+
+        if (isWithinBudget(weights)) {
+            float sharpe = getSharpeRatio(weights);
+            if (sharpe > maxSharpeValue) {
+                overrideBestPortfolio(weights);
             }
             return;
         }
+
         for (int i = 0; i <= maxNumOfStocks.get(tickers[index]); i++) {
             weights[index] = i;
-            if (stillWiggleRoom(weights)) {
+            if (index + 1 < weights.length) {
                 solve(weights, index + 1);
             }
         }
@@ -123,9 +121,8 @@ public class PerfCalculatorHandler {
         }
         Integer[] weights = new Integer[tickers.length];
         Arrays.fill(weights, 0);
-        for (int index = 0; index < weights.length; index++) {
-            solve(weights, index);
-        }
+        int index = 0;
+        solve(weights, index);
     }
 
     public void fetchBestPortfolio() {
