@@ -3,10 +3,8 @@ package com.MA.winner.performanceCalculations;
 import com.MA.winner.localDataStorage.AnalysisDataHandler;
 import com.MA.winner.localDataStorage.models.StocksRawData;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -15,11 +13,17 @@ public class PerfCalculatorHandler {
     private static final Logger logger = Logger.getLogger(AnalysisDataHandler.class.getName());
     StocksRawData stocksRawData;
 
+    String[] tickers;
+
     float totalBudget;
 
     float defaultPortfolioReturn;
 
     float maxSharpeValue;
+
+    Float[] returns;
+
+    Float[] risks;
 
     Map<String, Integer> bestPortfolio;
 
@@ -27,31 +31,42 @@ public class PerfCalculatorHandler {
 
     public PerfCalculatorHandler(StocksRawData stocksRawData, Float totalBudget) {
         this.stocksRawData = stocksRawData;
+        this.tickers = stocksRawData.getStocksAnalysisData().keySet().toArray(new String[0]);;
         this.totalBudget = totalBudget;
         this.defaultPortfolioReturn = 0.03f;
         this.maxSharpeValue = -Float.MAX_VALUE;
+        this.returns = getReturns();
+        this.risks = getRisks();
         this.bestPortfolio = new HashMap<>();
         this.maxNumOfStocks = new HashMap<>();
     }
 
 
-    public List<Float> getReturns(String[] tickers) {
-        List<Float> returns = new ArrayList<>();
-        for (String ticker: tickers) {
-            returns.add(stocksRawData.getStocksAnalysisData().get(ticker).get("avgReturn"));
+    public Float[] getReturns() {
+        Float[] returns = new Float[tickers.length];
+        for (int i = 0; i < tickers.length; i++) {
+            returns[i] = stocksRawData.getStocksAnalysisData().get(tickers[i]).get("avgReturn");
         }
         return returns;
     }
 
-    public List<Float> getRisks(String[] tickers) {
-        List<Float> returns = new ArrayList<>();
-        for (String ticker: tickers) {
-            returns.add(stocksRawData.getStocksAnalysisData().get(ticker).get("stdClose"));
+    public Float[] getRisks() {
+        Float[] returns = new Float[tickers.length];
+        for (int i = 0; i < tickers.length; i++) {
+            returns[i] = stocksRawData.getStocksAnalysisData().get(tickers[i]).get("stdClose");
         }
         return returns;
     }
 
-    public Boolean isWithinBudget(String[] tickers, Integer[] weights) {
+    public Boolean stillWiggleRoom(Integer[] weights) {
+        float budgetLeft = totalBudget;
+        for (int i = 0; i < tickers.length; i++) {
+            budgetLeft -= stocksRawData.getStocksAnalysisData().get(tickers[i]).get("avgClose") * weights[i];
+        }
+        return (budgetLeft > -(totalBudget * 0.1));
+    }
+
+    public Boolean isWithinBudget(Integer[] weights) {
         // budget spent should be around 90%-110% of totalBudget
         float budgetLeft = totalBudget;
         for (int i = 0; i < tickers.length; i++) {
@@ -60,7 +75,7 @@ public class PerfCalculatorHandler {
         return (budgetLeft <= totalBudget * 0.1 && budgetLeft >= - totalBudget * 0.1);
     }
 
-    public float getSharpeRatio(Integer[] weights, List<Float> returns, List<Float> risks) {
+    public float getSharpeRatio(Integer[] weights) {
         float numerator = 0.0f;
         float denominator = 0.0f;
         int totalWeights = 0;
@@ -68,48 +83,49 @@ public class PerfCalculatorHandler {
             totalWeights += weight;
         }
         for (int i = 0; i < weights.length; i++) {
-            numerator += weights[i] * (returns.get(i) - defaultPortfolioReturn) / totalWeights;
-            denominator += weights[i] * risks.get(i) / totalWeights;
+            numerator += weights[i] * (returns[i] - defaultPortfolioReturn) / totalWeights;
+            denominator += weights[i] * risks[i] / totalWeights;
         }
         return numerator/denominator;
     }
 
-    public void overrideBestPortfolio(String[] tickers, Integer[] weights) {
+    public void overrideBestPortfolio(Integer[] weights) {
         bestPortfolio = new HashMap<>();
         for (int i = 0; i < tickers.length; i++) {
             bestPortfolio.put(tickers[i], weights[i]);
         }
     }
 
-    public void solve(String[] tickers, Integer[] weights, int index) {
+    public void solve(Integer[] weights, int index) {
         // base case needs to be improved
         if (index == tickers.length) {
-            if (isWithinBudget(tickers, weights)) {
-                List<Float> returns = getReturns(tickers);
-                List<Float> risks = getRisks(tickers);
-                float sharpe = getSharpeRatio(weights, returns, risks);
+            if (isWithinBudget(weights)) {
+                float sharpe = getSharpeRatio(weights);
+                System.out.println(sharpe);
                 if (sharpe > maxSharpeValue) {
-                    overrideBestPortfolio(tickers, weights);
+                    overrideBestPortfolio(weights);
                 }
             }
             return;
         }
         for (int i = 0; i <= maxNumOfStocks.get(tickers[index]); i++) {
             weights[index] = i;
-            solve(tickers, weights, index + 1);
+            if (stillWiggleRoom(weights)) {
+                solve(weights, index + 1);
+            }
         }
     }
 
     public void recursionController() {
-        String[] tickers = stocksRawData.getStocksAnalysisData().keySet().toArray(new String[0]);
         for (String ticker: tickers) {
             float price = stocksRawData.getStocksAnalysisData().get(ticker).get("avgClose");
             maxNumOfStocks.put(ticker, (int) (totalBudget / price));
         }
         Integer[] weights = new Integer[tickers.length];
         Arrays.fill(weights, 0);
-        int index = 0;
-        solve(tickers, weights, index);
+        for (int index = 0; index < weights.length; index++) {
+            solve(weights, index);
+        }
     }
 
     public void fetchBestPortfolio() {
