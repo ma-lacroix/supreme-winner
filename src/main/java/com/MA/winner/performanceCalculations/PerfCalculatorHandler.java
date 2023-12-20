@@ -27,7 +27,7 @@ public class PerfCalculatorHandler {
 
     Map<String, Integer> bestPortfolio;
 
-    Map<String, Integer> maxNumOfStocks;
+    Integer maxNumOfStocks;
 
     public PerfCalculatorHandler(StocksRawData stocksRawData, Float totalBudget) {
         this.stocksRawData = stocksRawData;
@@ -38,7 +38,7 @@ public class PerfCalculatorHandler {
         this.returns = getReturns();
         this.risks = getRisks();
         this.bestPortfolio = new HashMap<>();
-        this.maxNumOfStocks = new HashMap<>();
+        this.maxNumOfStocks = 0;
     }
 
 
@@ -58,14 +58,6 @@ public class PerfCalculatorHandler {
         return risks;
     }
 
-    public Boolean stillWiggleRoom(Integer[] weights) {
-        float budgetLeft = totalBudget;
-        for (int i = 0; i < tickers.length; i++) {
-            budgetLeft -= stocksRawData.getStocksAnalysisData().get(tickers[i]).get("avgClose") * weights[i];
-        }
-        return budgetLeft > 0.0f;
-    }
-
     public Boolean isWithinBudget(Integer[] weights) {
         // budget spent should be around 90%-110% of totalBudget
         float budgetLeft = totalBudget;
@@ -76,17 +68,23 @@ public class PerfCalculatorHandler {
     }
 
     public float getSharpeRatio(Integer[] weights) {
+        // TODO: find a way to penalize imbalanced portfolios
         float numerator = 0.0f;
         float denominator = 0.0f;
         int totalWeights = 0;
+        int penalty = 1; // used for controlling portfolios with little diversification
         for (Integer weight : weights) {
             totalWeights += weight;
+            if (weight == 0) penalty++;
         }
         for (int i = 0; i < weights.length; i++) {
-            numerator += weights[i] * (returns[i] - defaultPortfolioReturn) / totalWeights;
-            denominator += weights[i] * risks[i] / totalWeights;
+            numerator += (weights[i] * (returns[i] - defaultPortfolioReturn))/totalWeights;
+            for (int j = 0; j < weights.length; j++) {
+                // TODO: normally we'd have correlation coefficients between instruments here
+                denominator += (weights[i] * weights[j] * risks[i] * risks[j]) * (1 + (float) weights[i] /totalWeights);
+            }
         }
-        return numerator/denominator;
+        return (numerator/denominator - (float) Math.pow(penalty,2)) * 100;
     }
 
     public void overrideBestPortfolio(Integer[] weights) {
@@ -98,31 +96,37 @@ public class PerfCalculatorHandler {
 
     public void solve(Integer[] weights, int index) {
 
-        if (isWithinBudget(weights)) {
-            float sharpe = getSharpeRatio(weights);
-            if (sharpe > maxSharpeValue) {
-                overrideBestPortfolio(weights);
-            }
+        if (index == weights.length) {
             return;
         }
 
-        for (int i = 0; i <= maxNumOfStocks.get(tickers[index]); i++) {
+        for (int i = 0; i <= maxNumOfStocks; i++) {
             weights[index] = i;
-            if (index + 1 < weights.length) {
-                solve(weights, index + 1);
+            if (isWithinBudget(weights)) {
+                float sharpe = getSharpeRatio(weights);
+                if (sharpe > maxSharpeValue) {
+                    overrideBestPortfolio(weights);
+                    maxSharpeValue = sharpe;
+                }
+                for (int j = index; j < weights.length; j++) {
+                    weights[j] = 0;
+                }
+                return;
             }
+            solve(weights, index + 1);
         }
     }
 
     public void recursionController() {
         for (String ticker: tickers) {
             float price = stocksRawData.getStocksAnalysisData().get(ticker).get("avgClose");
-            maxNumOfStocks.put(ticker, (int) (totalBudget / price));
+            maxNumOfStocks = Math.max(maxNumOfStocks, (int) (totalBudget / price));
         }
         Integer[] weights = new Integer[tickers.length];
         Arrays.fill(weights, 0);
         int index = 0;
         solve(weights, index);
+
     }
 
     public void fetchBestPortfolio() {

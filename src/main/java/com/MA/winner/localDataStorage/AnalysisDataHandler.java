@@ -13,9 +13,7 @@ import java.util.Map;
 public class AnalysisDataHandler {
 
     private static final Logger logger = Logger.getLogger(AnalysisDataHandler.class.getName());
-
     private final AllTickersDataHandler allTickersDataHandler;
-
     private final Float maxStockValue;
     private final String startDate;
     private final String endDate;
