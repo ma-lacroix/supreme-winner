@@ -21,6 +21,8 @@ public class PerfCalculatorHandler {
 
     float maxSharpeValue;
 
+    float riskLevel;
+
     Float[] returns;
 
     Float[] risks;
@@ -35,6 +37,7 @@ public class PerfCalculatorHandler {
         this.totalBudget = totalBudget;
         this.defaultPortfolioReturn = 0.03f;
         this.maxSharpeValue = -Float.MAX_VALUE;
+        this.riskLevel = 0.25f;
         this.returns = getReturns();
         this.risks = getRisks();
         this.bestPortfolio = new HashMap<>();
@@ -58,7 +61,21 @@ public class PerfCalculatorHandler {
         return risks;
     }
 
-    public Boolean isWithinBudget(Integer[] weights) {
+    public boolean isDiverseEnough(Integer[] weights) {
+        int zeros = 0;
+        for (Integer weight : weights) {
+            if (weight == 0) zeros++;
+        }
+        for (int i = 0; i < tickers.length; i++) {
+            float amount = stocksRawData.getStocksAnalysisData().get(tickers[i]).get("avgClose") * weights[i];
+            if (amount/totalBudget <= (float) 1 /weights.length && weights[i] > 0) {
+                return false;
+            }
+        }
+        return ((float) zeros/weights.length <= riskLevel);
+    }
+
+    public boolean isWithinBudget(Integer[] weights) {
         // budget spent should be around 90%-110% of totalBudget
         float budgetLeft = totalBudget;
         for (int i = 0; i < tickers.length; i++) {
@@ -68,14 +85,11 @@ public class PerfCalculatorHandler {
     }
 
     public float getSharpeRatio(Integer[] weights) {
-        // TODO: find a way to penalize imbalanced portfolios
         float numerator = 0.0f;
         float denominator = 0.0f;
         int totalWeights = 0;
-        int penalty = 1; // used for controlling portfolios with little diversification
         for (Integer weight : weights) {
             totalWeights += weight;
-            if (weight == 0) penalty++;
         }
         for (int i = 0; i < weights.length; i++) {
             numerator += (weights[i] * (returns[i] - defaultPortfolioReturn))/totalWeights;
@@ -84,7 +98,7 @@ public class PerfCalculatorHandler {
                 denominator += (weights[i] * weights[j] * risks[i] * risks[j]) * (1 + (float) weights[i] /totalWeights);
             }
         }
-        return (numerator/denominator - (float) Math.pow(penalty,2)) * 100;
+        return (numerator/denominator);
     }
 
     public void overrideBestPortfolio(Integer[] weights) {
@@ -102,7 +116,7 @@ public class PerfCalculatorHandler {
 
         for (int i = 0; i <= maxNumOfStocks; i++) {
             weights[index] = i;
-            if (isWithinBudget(weights)) {
+             if (isWithinBudget(weights) && isDiverseEnough(weights)) {
                 float sharpe = getSharpeRatio(weights);
                 if (sharpe > maxSharpeValue) {
                     overrideBestPortfolio(weights);
