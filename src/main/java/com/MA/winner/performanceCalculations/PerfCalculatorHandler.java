@@ -75,13 +75,18 @@ public class PerfCalculatorHandler {
         return ((float) zeros/weights.length <= riskLevel);
     }
 
-    public boolean isWithinBudget(Integer[] weights) {
+    public boolean isWithinBudget(float budgetLeft) {
+        // budget spent should be around 90%-110% of totalBudget
+        return (budgetLeft >= -(totalBudget * 0.1f) && budgetLeft <= totalBudget * 0.1f);
+    }
+
+    public float getBudgetLet(Integer[] weights) {
         // budget spent should be around 90%-110% of totalBudget
         float budgetLeft = totalBudget;
         for (int i = 0; i < tickers.length; i++) {
             budgetLeft -= stocksRawData.getStocksAnalysisData().get(tickers[i]).get("avgClose") * weights[i];
         }
-        return (budgetLeft >= -(totalBudget * 0.1f) && budgetLeft <= totalBudget * 0.1f);
+        return budgetLeft;
     }
 
     public float getSharpeRatio(Integer[] weights) {
@@ -109,23 +114,23 @@ public class PerfCalculatorHandler {
     }
 
     public void solve(Integer[] weights, int index) {
-
         if (index == weights.length) {
             return;
         }
 
         for (int i = 0; i <= maxNumOfStocks; i++) {
             weights[index] = i;
-             if (isWithinBudget(weights) && isDiverseEnough(weights)) {
+            float budgetLeft = getBudgetLet(weights);
+            if (budgetLeft < 0.0f && !isWithinBudget(budgetLeft)) {
+                weights[index] = 0;
+                return;
+            }
+            if (isWithinBudget(budgetLeft) && isDiverseEnough(weights)) {
                 float sharpe = getSharpeRatio(weights);
                 if (sharpe > maxSharpeValue) {
                     overrideBestPortfolio(weights);
                     maxSharpeValue = sharpe;
                 }
-                for (int j = index; j < weights.length; j++) {
-                    weights[j] = 0;
-                }
-                return;
             }
             solve(weights, index + 1);
         }
