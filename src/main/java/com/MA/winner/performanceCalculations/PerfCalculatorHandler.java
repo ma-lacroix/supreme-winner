@@ -11,25 +11,34 @@ import java.util.logging.Logger;
 public class PerfCalculatorHandler {
 
     private static final Logger logger = Logger.getLogger(AnalysisDataHandler.class.getName());
-    StocksRawData stocksRawData;
+    private StocksRawData stocksRawData;
 
-    String[] tickers;
+    private String[] tickers;
 
-    float totalBudget;
+    private float totalBudget;
 
-    float defaultPortfolioReturn;
+    private float defaultPortfolioReturn;
 
-    float maxSharpeValue;
+    private float maxSharpeValue;
 
-    float riskLevel;
+    private final float riskLevel;
 
-    Float[] returns;
+    private final Float[] returns;
 
-    Float[] risks;
+    private final Float[] risks;
 
-    Map<String, Integer> bestPortfolio;
+    private Map<String, Integer> bestPortfolio;
 
-    Integer maxNumOfStocks;
+    private Integer maxNumOfStocks;
+
+    // TODO: consider moving these variables to a UI class
+    public int tasksCounter = 0;
+
+    public long totalTasks = 1;
+
+    long startTime = System.currentTimeMillis();
+    long updateInterval = 1000; // Update every 1 second
+
 
     public PerfCalculatorHandler(StocksRawData stocksRawData, Float totalBudget) {
         this.stocksRawData = stocksRawData;
@@ -113,6 +122,17 @@ public class PerfCalculatorHandler {
         }
     }
 
+    public void printProgress() {
+        // TODO: consider moving this to a UI class
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - startTime >= updateInterval) {
+            int progress = (int) ((double) tasksCounter / totalTasks * 100);
+            System.out.print("\rProgress: " + progress + "% " + tasksCounter + " of an estimated " + totalTasks + " tasks");
+            System.out.flush();
+            startTime = currentTime;
+        }
+    }
+
     public void solve(Integer[] weights, int index) {
         if (index == weights.length) {
             return;
@@ -120,6 +140,8 @@ public class PerfCalculatorHandler {
 
         for (int i = 0; i <= maxNumOfStocks; i++) {
             weights[index] = i;
+            tasksCounter++;
+            printProgress();
             float budgetLeft = getBudgetLet(weights);
             if (budgetLeft < 0.0f && !isWithinBudget(budgetLeft)) {
                 weights[index] = 0;
@@ -137,18 +159,23 @@ public class PerfCalculatorHandler {
     }
 
     public void recursionController() {
+        // TODO: move this loop to a UI class
         for (String ticker: tickers) {
             float price = stocksRawData.getStocksAnalysisData().get(ticker).get("avgClose");
-            maxNumOfStocks = Math.max(maxNumOfStocks, (int) (totalBudget / price));
+            int tickerMaxStocks = (int) (totalBudget / price);
+            maxNumOfStocks = Math.max(maxNumOfStocks, tickerMaxStocks);
+            totalTasks *= tickerMaxStocks;
         }
+        totalTasks /= 100_000; // most portfolios will not be computed due to budget constraints
         Integer[] weights = new Integer[tickers.length];
         Arrays.fill(weights, 0);
         int index = 0;
+        System.out.println("Fetching about " + totalTasks + " combinations");
         solve(weights, index);
-
     }
 
     public void fetchBestPortfolio() {
+        // TODO: consider moving this to a UI class
         logger.info("Fetching best portfolio...");
         recursionController();
         logger.info("Sharpe says: \n");
