@@ -43,6 +43,7 @@ public class AnalysisDataHandler {
     }
 
     public StocksRawData getStocksAnalysisData() throws IOException {
+        // TODO: use Spark
         logger.info("Getting stocks data");
         Map<String, Map<String, Float>> stocksAnalysisData = new HashMap<>();
         List<String> tickers = getSp500Tickers();
@@ -54,7 +55,6 @@ public class AnalysisDataHandler {
             if (Float.parseFloat(stockDataResponse.getStockData().get("Close").get(len-1)) > maxStockValue) {
                 continue;
             }
-            // TODO: missing -> ROIs
             Map<String, Float> stockDescriptiveData = new HashMap<>();
             float totalClose = 0;
             float minClose = Float.MAX_VALUE;

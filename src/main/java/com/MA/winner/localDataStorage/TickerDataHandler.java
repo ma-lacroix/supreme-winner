@@ -32,6 +32,7 @@ public class TickerDataHandler {
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             con.setDoOutput(true);
+            // TODO: use ObjectMapper
             BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
             String inputLine;
             int count = 0;

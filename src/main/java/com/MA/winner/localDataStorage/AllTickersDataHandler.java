@@ -22,7 +22,7 @@ public class AllTickersDataHandler {
             ProcessBuilder processBuilder = new ProcessBuilder(command.split("\\s+"));
             Process process = processBuilder.start();
 
-            // Read the output of the command
+            // TODO: use spark
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
             int count = 0;
