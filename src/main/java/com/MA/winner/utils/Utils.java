@@ -10,9 +10,7 @@ import java.util.Date;
 public class Utils {
 
     public static void printResults(StockDataResponse response) {
-        for (String key: response.getCols()) {
-            System.out.println(key + " " + response.getStockData().get(key).toString());
-        }
+
     }
 
     public static void printStocksRawData(StocksRawData rawData) {

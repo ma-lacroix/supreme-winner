@@ -1,27 +1,21 @@
 package com.MA.winner.localDataStorage.models;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 @Getter
 @Setter
+@AllArgsConstructor
 public class StockDataResponse {
 
-    private Map<String, List<String>> stockData;
+    String date;
+    float open;
+    float high;
+    float low;
+    float close;
+    float adjClose;
+    float volume;
 
-    private List<String> cols;
-
-    public StockDataResponse(List<String> cols) {
-        this.stockData = new HashMap<>();
-        this.cols = cols;
-        for (String col: cols){
-            stockData.put(col, new ArrayList<>());
-        }
-    }
 }
