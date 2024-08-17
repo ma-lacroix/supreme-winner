@@ -47,18 +47,18 @@ public class AnalysisDataHandlerSpark {
             stockMetaDataResponses.forEach(response -> tickers.add(response.getSymbol()));
         } else {
             stockMetaDataResponses.stream()
-                    .filter(response -> response.getSymbol().equals(sector))
+                    .filter(response -> response.getSector().equals(sector))
                     .forEach(response -> tickers.add(response.getSymbol()));
         }
         return tickers;
     }
 
     public StocksRawData getStocksAnalysisData() throws IOException {
-        // TODO: use Spark
         logger.info("Getting stocks data");
         Map<String, Map<String, Float>> stocksAnalysisData = new HashMap<>();
         List<String> tickers = getSp500Tickers();
         System.out.println(tickers.toString());
+        // TODO: use Spark
         return StocksRawData.builder()
                 .stocksAnalysisData(stocksAnalysisData)
                 .build();

@@ -44,7 +44,6 @@ public class AllTickersDataHandler {
                     String[] firstFourElements = new String[Math.min(4, elements.length)];
                     System.arraycopy(elements, 0, firstFourElements, 0, firstFourElements.length);
                     String reconstructedLine = String.join(",", firstFourElements);
-                    System.out.println(reconstructedLine);
                     content.append(reconstructedLine).append("\n");
                 }
                 in.close();
@@ -55,7 +54,6 @@ public class AllTickersDataHandler {
                         .with(csvSchema)
                         .readValues(content.toString());
                 List<StockMetaDataResponse> stockMetaDataResponses = iterator.readAll();
-                stockMetaDataResponses.forEach(StockMetaDataResponse::printAll);
                 return stockMetaDataResponses;
             }
         } catch (IOException e) {
