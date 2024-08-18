@@ -1,7 +1,11 @@
 package com.MA.winner.localDataStorage;
 
+import com.MA.winner.localDataStorage.models.StockMetaDataResponse;
 import com.MA.winner.localDataStorage.models.YahooStockPriceRequests;
 import com.MA.winner.localDataStorage.models.StockDataResponse;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import jdk.jshell.spi.ExecutionControl;
 
 import java.io.BufferedReader;
@@ -27,33 +31,38 @@ public class TickerDataHandler {
                 .build();
     }
 
-    public StockDataResponse getTickerData() throws ExecutionControl.NotImplementedException {
-        throw new ExecutionControl.NotImplementedException("not there");
-//        URL url = new URL(yahooStockPriceRequests.getTickerDataURL());
-//        List<StockDataResponse> stockDataResponses = new ArrayList<>();
-//        try {
-//            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-//            con.setRequestMethod("GET");
-//            con.setDoOutput(true);
-//            // TODO: use ObjectMapper
-//            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-//            String inputLine;
-//            int count = 0;
-//            while ((inputLine = in.readLine()) != null) {
-//                if (count > 0) {
-//                    int len = inputLine.split(",").length;
-//                    for (int i = 0; i < len; i++) {
-//                        stockDataResponse.getStockData().computeIfAbsent(stockDataResponse.getCols().get(i),
-//                                s -> new ArrayList<>()).add(inputLine.split(",")[i]);
-//                    }
-//                }
-//                count++;
-//            }
-//            in.close();
-//            con.disconnect();
-//            return stockDataResponse;
-//        } catch (Exception e) {
-//            throw new ConnectException("Couldn't get data.");
-//        }
+    public List<StockDataResponse> getTickerData() {
+
+        String urlString = yahooStockPriceRequests.getTickerDataURL();
+        try {
+            URL url = new URL(urlString);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                StringBuilder content = new StringBuilder();
+                String inputLine;
+
+                while ((inputLine = in.readLine()) != null) {
+                    String[] elements = inputLine.split(",");
+                    String reconstructedLine = String.join(",", elements);
+                    content.append(reconstructedLine).append("\n");
+                }
+                in.close();
+                connection.disconnect();
+                CsvMapper csvMapper = new CsvMapper();
+                CsvSchema csvSchema = csvMapper.schemaFor(StockDataResponse.class).withHeader();
+                MappingIterator<StockDataResponse> iterator = csvMapper.readerFor(StockDataResponse.class)
+                        .with(csvSchema)
+                        .readValues(content.toString());
+                List<StockDataResponse> stockMetaDataResponses = iterator.readAll();
+                return stockMetaDataResponses;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
     }
 }

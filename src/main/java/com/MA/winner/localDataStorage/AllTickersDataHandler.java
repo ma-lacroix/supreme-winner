@@ -1,11 +1,7 @@
 package com.MA.winner.localDataStorage;
 
-import com.MA.winner.localDataStorage.models.Sp500tickerNamesRequest;
-import com.MA.winner.localDataStorage.models.StockDataResponse;
 import com.MA.winner.localDataStorage.models.StockMetaDataResponse;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 
@@ -13,9 +9,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 
