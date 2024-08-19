@@ -1,14 +1,22 @@
 package com.MA.winner.localDataStorage;
 
 import com.MA.winner.localDataStorage.models.StockDataResponse;
-import com.MA.winner.localDataStorage.models.StocksRawData;
+import com.MA.winner.localDataStorage.models.StockMetaDataResponse;
 
-import java.util.logging.Logger;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.logging.Logger;
+
+import com.MA.winner.localDataStorage.models.StockPerformanceData;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StructField;
+import org.apache.spark.sql.types.StructType;
+import org.apache.spark.sql.RowFactory;
+
+import static org.apache.spark.sql.functions.*;
 
 public class AnalysisDataHandler {
 
@@ -18,6 +26,7 @@ public class AnalysisDataHandler {
     private final String startDate;
     private final String endDate;
     private final String sector;
+    protected SparkSession spark;
 
     public AnalysisDataHandler(Float maxStockValue, String startDate, String endDate, String sector) {
         this.allTickersDataHandler = new AllTickersDataHandler();
@@ -25,77 +34,108 @@ public class AnalysisDataHandler {
         this.startDate = startDate;
         this.endDate = endDate;
         this.sector = (sector==null) ? "all" : sector;
+        this.spark = SparkSession.builder()
+                .appName("stocks")
+                .master("local[*]")
+                .getOrCreate();
     }
 
-    public List<String> getSp500Tickers() {
+    public List<String>  getSp500Tickers() throws IOException {
         logger.info("Getting sp500 tickers");
-        if (sector.equals("all")) {
-            return allTickersDataHandler.getAllTickers().getStockData().get("Symbol");
-        }
         List<String> tickers = new ArrayList<>();
-        StockDataResponse data = allTickersDataHandler.getAllTickers();
-        for (int i = 0; i < data.getStockData().get("Sector").size(); i++) {
-            if (data.getStockData().get("Sector").get(i).equals(sector)) {
-                tickers.add(data.getStockData().get("Symbol").get(i));
-            }
+        List<StockMetaDataResponse> stockMetaDataResponses = allTickersDataHandler.getAllTickers();
+        if (sector.equals("all")) {
+            stockMetaDataResponses.forEach(response -> tickers.add(response.getSymbol()));
+        } else {
+            stockMetaDataResponses.stream()
+                    .filter(response -> response.getSector().equals(sector))
+                    .forEach(response -> tickers.add(response.getSymbol()));
         }
         return tickers;
     }
 
-    public StocksRawData getStocksAnalysisData() throws IOException {
-        logger.info("Getting stocks data");
-        Map<String, Map<String, Float>> stocksAnalysisData = new HashMap<>();
-        List<String> tickers = getSp500Tickers();
-        for (String ticker: tickers) {
-            TickerDataHandler tickerDataHandler = new TickerDataHandler(ticker, startDate, endDate);
-            StockDataResponse stockDataResponse = tickerDataHandler.getTickerData();
-            int len = stockDataResponse.getStockData().get("Date").size();
-            // skipping tickers above budget
-            if (Float.parseFloat(stockDataResponse.getStockData().get("Close").get(len-1)) > maxStockValue) {
-                continue;
+    public List<Row> fetchTickerData(List<String> tickers) {
+        List<Row> rows = new ArrayList<>();
+        for (String tickerName: tickers) {
+            TickerDataHandler tickerDataHandler = new TickerDataHandler(tickerName, startDate, endDate);
+            List<StockDataResponse> stockDataResponses = tickerDataHandler.getTickerData();
+            for (StockDataResponse response: stockDataResponses) {
+                rows.add(RowFactory.create(tickerName,
+                        response.getDate(),
+                        response.getOpen(),
+                        response.getHigh(),
+                        response.getLow(),
+                        response.getClose(),
+                        response.getAdjClose(),
+                        response.getVolume()));
             }
-            // TODO: missing -> ROIs
-            Map<String, Float> stockDescriptiveData = new HashMap<>();
-            float totalClose = 0;
-            float minClose = Float.MAX_VALUE;
-            float maxClose = 0;
-            float totalDeviationClose = 0;
-            float totalVolume = 0;
-            float minVolume = Float.MAX_VALUE;
-            float maxVolume = 0;
-            float totalDeviationVolume = 0;
-            for (int i = 0; i < len; i++) {
-                float close = Float.parseFloat(stockDataResponse.getStockData().get("Close").get(i));
-                float volume = Float.parseFloat(stockDataResponse.getStockData().get("Volume").get(i));
-                totalClose += close;
-                minClose = Math.min(close, minClose);
-                maxClose = Math.max(close, maxClose);
-                totalVolume += volume;
-                minVolume = Math.min(volume, minVolume);
-                maxVolume = Math.max(volume, maxVolume);
-            }
-            float roi = Float.parseFloat(stockDataResponse.getStockData().get("Close").get(len-1))/
-                    Float.parseFloat(stockDataResponse.getStockData().get("Close").get(0)) - 1;
-            stockDescriptiveData.put("minClose", minClose);
-            stockDescriptiveData.put("maxClose", maxClose);
-            stockDescriptiveData.put("avgClose", totalClose/len);
-            stockDescriptiveData.put("avgReturn", roi);
-            stockDescriptiveData.put("minVolume", minVolume);
-            stockDescriptiveData.put("maxVolume", maxVolume);
-            stockDescriptiveData.put("avgVolume", totalVolume/len);
-            // standard deviation
-            for (int i = 0; i < len; i++) {
-                float close = Float.parseFloat(stockDataResponse.getStockData().get("Close").get(i));
-                float volume = Float.parseFloat(stockDataResponse.getStockData().get("Volume").get(i));
-                totalDeviationClose += (float) Math.pow(close - stockDescriptiveData.get("avgClose"),2);
-                totalDeviationVolume += (float) Math.pow(volume - stockDescriptiveData.get("avgVolume"),2);
-            }
-            stockDescriptiveData.put("stdClose", (float) Math.sqrt(totalDeviationClose/len));
-            stockDescriptiveData.put("stdVolume", (float) Math.sqrt(totalDeviationVolume/len));
-            stocksAnalysisData.put(ticker, stockDescriptiveData);
         }
-        return StocksRawData.builder()
-                .stocksAnalysisData(stocksAnalysisData)
-                .build();
+        return rows;
+    }
+
+    public Dataset<Row> createSparkDF(List<Row> rows) {
+
+        StructType schema = new StructType(new StructField[]{
+                DataTypes.createStructField("symbol", DataTypes.StringType, true),
+                DataTypes.createStructField("date", DataTypes.StringType, true),
+                DataTypes.createStructField("open", DataTypes.FloatType, true),
+                DataTypes.createStructField("high", DataTypes.FloatType, true),
+                DataTypes.createStructField("low", DataTypes.FloatType, true),
+                DataTypes.createStructField("close", DataTypes.FloatType, true),
+                DataTypes.createStructField("adjClose", DataTypes.FloatType, true),
+                DataTypes.createStructField("volume", DataTypes.FloatType, true)
+        });
+        Dataset<Row> df = spark.createDataFrame(rows, schema);
+        String maxDate = df.select("date").agg(max(col("date"))).first().getString(0); // weekends
+        Dataset<Row> stocksWithingBudget = df.filter(df.col("date").equalTo(maxDate))
+                .filter(df.col("close").leq(maxStockValue)).select(col("symbol"));
+        df = df.alias("t1")
+                .join(stocksWithingBudget.alias("t2"), col("t1.symbol").equalTo(col("t2.symbol")))
+                .drop(col("t2.symbol"));
+        return df;
+    }
+
+    public Dataset<Row> genStocksAnalysisData(Dataset<Row> df) {
+        String minDate = df.select("date").agg(min(col("date"))).first().getString(0); // weekends
+        String maxDate = df.select("date").agg(max(col("date"))).first().getString(0); // weekends
+        Dataset<Row> roiDFMin = df.filter(col("date").equalTo(minDate))
+                .select(col("symbol"), col("close"));
+        Dataset<Row> roiDFMax = df.filter(col("date").equalTo(maxDate))
+                .select(col("symbol"), col("close"));
+        Dataset<Row> roiDF = roiDFMin.alias("t1")
+                .join(roiDFMax.alias("t2"), col("t1.symbol").equalTo(col("t2.symbol")))
+                        .withColumn("roi", round(col("t2.close")
+                                .minus(col("t1.close"))
+                                .divide(col("t1.close"))
+                                .multiply(100), 3))
+                .drop(col("t2.symbol"), col("t2.close"));
+        Dataset<Row> basicDataDF = df.groupBy(col("symbol")).agg(
+                round(std(col("close")),3).alias("std"),
+                    round(avg(col("close")),3).alias("avg"));
+        return roiDF.alias("t1").join(basicDataDF.alias("t2"), col("t1.symbol").equalTo(col("t2.symbol")))
+                .drop(col("t2.symbol"));
+    }
+
+    public List<StockPerformanceData> getStocksAnalysisData() throws IOException {
+        logger.info("Getting stocks data");
+        List<String> tickers = getSp500Tickers();
+        logger.info(tickers.toString());
+        List<Row> dataRows = fetchTickerData(tickers);
+        Dataset<Row> sparkDF = createSparkDF(dataRows);
+        sparkDF = genStocksAnalysisData(sparkDF);
+        List<StockPerformanceData> stockPerformanceDataList = new ArrayList<>();
+        List<Row> rows = sparkDF.collectAsList();
+        for (Row row : rows) {
+            StockPerformanceData stockPerformanceData = StockPerformanceData.builder()
+                    .symbol((String) row.get(0))
+                    .close(((Number) row.get(1)).floatValue())
+                    .roi(((Number) row.get(2)).floatValue())
+                    .std(((Number) row.get(3)).floatValue())
+                    .avg(((Number) row.get(4)).floatValue())
+                    .build();
+            stockPerformanceDataList.add(stockPerformanceData);
+        }
+        stockPerformanceDataList.forEach(StockPerformanceData::printAll);
+        return stockPerformanceDataList;
     }
 }

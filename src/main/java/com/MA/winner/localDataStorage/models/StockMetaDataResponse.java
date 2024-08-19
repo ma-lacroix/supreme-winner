@@ -11,15 +11,11 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonPropertyOrder({"date","open","high","low","close","adjClose","volume"})
-public class StockDataResponse {
-
-    String date;
-    float open;
-    float high;
-    float low;
-    float close;
-    float adjClose;
-    float volume;
-
+@JsonPropertyOrder({"symbol", "security", "sector", "industry"})
+public class StockMetaDataResponse {
+    // "Symbol","Security","Sector","Industry"
+    String symbol;
+    String security;
+    String sector;
+    String industry;
 }
