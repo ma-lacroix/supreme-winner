@@ -1,8 +1,10 @@
 package com.MA.winner;
 
 import com.MA.winner.localDataStorage.AnalysisDataHandler;
+import com.MA.winner.localDataStorage.models.StockPerformanceData;
 
 import java.io.IOException;
+import java.util.List;
 
 public class StockAnalysisController {
 
@@ -26,6 +28,7 @@ public class StockAnalysisController {
     }
 
     public void run() throws IOException {
-        analysisDataHandler.getStocksAnalysisData();
+        List<StockPerformanceData> stockPerformanceDataList = analysisDataHandler.getStocksAnalysisData();
+
     }
 }

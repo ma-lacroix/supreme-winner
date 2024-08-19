@@ -18,12 +18,4 @@ public class StockMetaDataResponse {
     String security;
     String sector;
     String industry;
-
-
-    public void printAll() {
-        System.out.println(symbol);
-        System.out.println(security);
-        System.out.println(sector);
-        System.out.println(industry);
-    }
 }

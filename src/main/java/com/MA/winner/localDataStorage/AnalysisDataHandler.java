@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
 
+import com.MA.winner.localDataStorage.models.StockPerformanceData;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -106,23 +107,35 @@ public class AnalysisDataHandler {
                         .withColumn("roi", round(col("t2.close")
                                 .minus(col("t1.close"))
                                 .divide(col("t1.close"))
-                                .multiply(100), 2))
+                                .multiply(100), 3))
                 .drop(col("t2.symbol"), col("t2.close"));
         Dataset<Row> basicDataDF = df.groupBy(col("symbol")).agg(
-                    round(std(col("close")),2).alias("std"),
-                    round(avg(col("close")),2).alias("avg"));
+                round(std(col("close")),3).alias("std"),
+                    round(avg(col("close")),3).alias("avg"));
         return roiDF.alias("t1").join(basicDataDF.alias("t2"), col("t1.symbol").equalTo(col("t2.symbol")))
                 .drop(col("t2.symbol"));
     }
 
-    public void getStocksAnalysisData() throws IOException {
+    public List<StockPerformanceData> getStocksAnalysisData() throws IOException {
         logger.info("Getting stocks data");
         List<String> tickers = getSp500Tickers();
-        System.out.println(tickers.toString());
+        logger.info(tickers.toString());
         List<Row> dataRows = fetchTickerData(tickers);
         Dataset<Row> sparkDF = createSparkDF(dataRows);
         sparkDF = genStocksAnalysisData(sparkDF);
-        sparkDF.show();
-        // TODO: do something with the DF
+        List<StockPerformanceData> stockPerformanceDataList = new ArrayList<>();
+        List<Row> rows = sparkDF.collectAsList();
+        for (Row row : rows) {
+            StockPerformanceData stockPerformanceData = StockPerformanceData.builder()
+                    .symbol((String) row.get(0))
+                    .close(((Number) row.get(1)).floatValue())
+                    .roi(((Number) row.get(2)).floatValue())
+                    .std(((Number) row.get(3)).floatValue())
+                    .avg(((Number) row.get(4)).floatValue())
+                    .build();
+            stockPerformanceDataList.add(stockPerformanceData);
+        }
+        stockPerformanceDataList.forEach(StockPerformanceData::printAll);
+        return stockPerformanceDataList;
     }
 }

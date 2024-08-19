@@ -1,9 +1,6 @@
 package com.MA.winner;
 
-import com.MA.winner.StockAnalysisController;
-
 import java.io.IOException;
-
 
 public class MainClass {
 
@@ -11,7 +8,7 @@ public class MainClass {
         System.out.println("Application starts...");
         StockAnalysisController stockAnalysisController = new StockAnalysisController(
                 50.0f,
-                "2024-08-10",
+                "2024-01-10",
                 "2024-08-17",
                 "Energy");
         stockAnalysisController.run();
