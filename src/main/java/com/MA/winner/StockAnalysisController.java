@@ -32,7 +32,7 @@ public class StockAnalysisController {
 
     public void run() throws IOException {
         List<StockPerformanceData> stockPerformanceDataList = analysisDataHandler.getStocksAnalysisData();
-        PerfCalculatorHandler perfCalculatorHandler = new PerfCalculatorHandler(stockPerformanceDataList, 10L);
-        perfCalculatorHandler.generatePortolio();
+        PerfCalculatorHandler perfCalculatorHandler = new PerfCalculatorHandler(stockPerformanceDataList, 100L);
+        perfCalculatorHandler.generateResults();
     }
 }
