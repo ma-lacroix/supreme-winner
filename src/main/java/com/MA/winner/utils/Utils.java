@@ -1,8 +1,11 @@
 package com.MA.winner.utils;
 
+import com.MA.winner.localDataStorage.models.StockPerformanceData;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 
 public class Utils {
 
@@ -16,6 +19,20 @@ public class Utils {
             throw new RuntimeException(e);
         }
         return String.valueOf(unixTimestamp);
+    }
+
+    public static void printAllStockPerformanceData(StockPerformanceData stockPerformanceData) {
+        System.out.println("Symbol: " + stockPerformanceData.getSymbol() +
+                ", Close: " + stockPerformanceData.getClose() +
+                ", ROI: " + stockPerformanceData.getRoi() +
+                ", STD: " + stockPerformanceData.getStd() +
+                ", AVG: " + stockPerformanceData.getAvg());
+    }
+
+    public static void printRecommendation(Map<String, Integer> inv) {
+        for (String key: inv.keySet()) {
+            System.out.println(key + " " + inv.get(key));
+        }
     }
 }
 

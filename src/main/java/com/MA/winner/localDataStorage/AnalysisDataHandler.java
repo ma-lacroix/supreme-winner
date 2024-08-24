@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import com.MA.winner.localDataStorage.models.StockPerformanceData;
+import com.MA.winner.utils.Utils;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -16,6 +17,7 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.apache.spark.sql.RowFactory;
 
+import static com.MA.winner.utils.Utils.printAllStockPerformanceData;
 import static org.apache.spark.sql.functions.*;
 
 public class AnalysisDataHandler {
@@ -135,7 +137,7 @@ public class AnalysisDataHandler {
                     .build();
             stockPerformanceDataList.add(stockPerformanceData);
         }
-        stockPerformanceDataList.forEach(StockPerformanceData::printAll);
+        stockPerformanceDataList.forEach(Utils::printAllStockPerformanceData);
         return stockPerformanceDataList;
     }
 }

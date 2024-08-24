@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import static com.MA.winner.utils.Utils.printRecommendation;
 import static org.apache.spark.sql.functions.col;
 import static org.apache.spark.sql.functions.max;
 
@@ -60,6 +61,7 @@ public class PerfCalculatorHandler {
     }
 
     public float getSharpeRatio(double[] shares) {
+        // The secret sauce
         float num = 1.0f;
         float denum = 1.0f;
         for (int i = 0; i < stocksListSize; i++) {
@@ -102,12 +104,15 @@ public class PerfCalculatorHandler {
 
     public Map<String, Integer> generateBestPortfolio(Row rowWithMaxSharpe) {
         Map<String, Integer> inv = new HashMap<>();
-        for (int i = 0; i < rowWithMaxSharpe.size(); i+=4) {
+        int size = rowWithMaxSharpe.size() - rowWithMaxSharpe.size() % 4;
+        for (int i = 0; i < size; i+=4) {
             String name = rowWithMaxSharpe.schema().fieldNames()[i].split("_")[0];
             float close = rowWithMaxSharpe.getFloat(i);
-            double share = rowWithMaxSharpe.getFloat(i + 3);
-            int stocks = Math.toIntExact(Math.round((share * budget) * close));
-            inv.put(name, stocks);
+            double share = rowWithMaxSharpe.getDouble(i + 3);
+            int stocks = Math.toIntExact(Math.round((share * budget) / close));
+            if (stocks > 0) {
+                inv.put(name, stocks);
+            }
         }
         return inv;
     }
@@ -134,8 +139,6 @@ public class PerfCalculatorHandler {
             logger.info(name + " " + object);
         }
         Map<String, Integer> best = generateBestPortfolio(rowWithMaxSharpe);
-        for (String key: best.keySet()) {
-            System.out.println(key + " " + best.get(key));
-        }
+        printRecommendation(best);
     }
 }

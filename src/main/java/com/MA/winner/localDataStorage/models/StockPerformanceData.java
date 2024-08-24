@@ -13,8 +13,4 @@ public class StockPerformanceData {
     float roi;
     float std;
     float avg;
-
-    public void printAll() {
-        System.out.println("Symbol: " + symbol + ", Close: " + close + ", ROI: " + roi + ", STD: " + std + ", AVG: " + avg);
-    }
 }
