@@ -1,30 +1,41 @@
 package com.MA.winner.performanceCalculations;
 
+import com.MA.winner.localDataStorage.AnalysisDataHandler;
 import com.MA.winner.localDataStorage.models.StockPerformanceData;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.sources.In;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Random;
+import java.util.logging.Logger;
+
+import static org.apache.spark.sql.functions.col;
+import static org.apache.spark.sql.functions.max;
 
 public class PerfCalculatorHandler {
 
+    private static final Logger logger = Logger.getLogger(AnalysisDataHandler.class.getName());
     List<StockPerformanceData> stockPerformanceDataList;
     int stocksListSize;
+    float budget;
     long numSamples;
     Random random;
     protected SparkSession spark;
 
-    public PerfCalculatorHandler(List<StockPerformanceData> stockPerformanceDataList, long numSamples) {
+    public PerfCalculatorHandler(List<StockPerformanceData> stockPerformanceDataList, long numSamples, float budget) {
         this.stockPerformanceDataList = stockPerformanceDataList;
         this.stocksListSize = stockPerformanceDataList.size();
         this.numSamples = numSamples;
+        this.budget = budget;
         this.random = new Random();
         this.spark = SparkSession.builder()
                 .appName("performance")
@@ -61,6 +72,10 @@ public class PerfCalculatorHandler {
     public Row generatePortolio() {
         double[] shares = randomShareOfStocks();
         float sharpe = getSharpeRatio(shares);
+        if (sharpe <= 1.0f) {
+            // Tossing away negatives
+            return null;
+        }
         List<Object> rowElements = new ArrayList<>();
         for (int i = 0; i < stocksListSize; i++) {
             rowElements.add(stockPerformanceDataList.get(i).getClose());
@@ -85,14 +100,42 @@ public class PerfCalculatorHandler {
         return DataTypes.createStructType(fields);
     }
 
+    public Map<String, Integer> generateBestPortfolio(Row rowWithMaxSharpe) {
+        Map<String, Integer> inv = new HashMap<>();
+        for (int i = 0; i < rowWithMaxSharpe.size(); i+=4) {
+            String name = rowWithMaxSharpe.schema().fieldNames()[i].split("_")[0];
+            float close = rowWithMaxSharpe.getFloat(i);
+            double share = rowWithMaxSharpe.getFloat(i + 3);
+            int stocks = Math.toIntExact(Math.round((share * budget) * close));
+            inv.put(name, stocks);
+        }
+        return inv;
+    }
+
     public void generateResults() {
         List<Row> rows = new ArrayList<>();
         for (int i = 0; i < numSamples; i++) {
-            rows.add(generatePortolio());
+            if (i % 100000 == 0) {
+                logger.info((int) ((i / (double) numSamples) * 100) + " % done");
+            }
+            Row portfolio = generatePortolio();
+            if (portfolio != null) {
+                rows.add(portfolio);
+            }
         }
+        logger.info("100 % done");
         Dataset<Row> df = spark.createDataFrame(rows, generateSchema());
-        df.show(100);
-        // TODO: all that's left now is to calculate which portfolios can be bought and which one is the best
-        // Another idea: separate the portfolio metadata in a separate dataframe
+        float maxSharpe = df.agg(max("sharpe")).first().getFloat(0);
+        Row rowWithMaxSharpe = df.filter(col("sharpe").equalTo(maxSharpe)).first();
+        System.out.println(rowWithMaxSharpe);
+        for (int i = 0; i < rowWithMaxSharpe.size(); i++) {
+            String name = rowWithMaxSharpe.schema().fieldNames()[i];
+            Object object = rowWithMaxSharpe.get(i);
+            logger.info(name + " " + object);
+        }
+        Map<String, Integer> best = generateBestPortfolio(rowWithMaxSharpe);
+        for (String key: best.keySet()) {
+            System.out.println(key + " " + best.get(key));
+        }
     }
 }

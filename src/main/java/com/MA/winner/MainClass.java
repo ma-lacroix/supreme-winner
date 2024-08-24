@@ -10,7 +10,8 @@ public class MainClass {
                 50.0f,
                 "2024-01-10",
                 "2024-08-17",
-                "Energy");
+                "Energy",
+                2000.0f);
         stockAnalysisController.run();
     }
 }
