@@ -1,7 +1,8 @@
-package com.MA.winner;
+package com.MA.winner.controller;
 
 import com.MA.winner.localDataStorage.AnalysisDataHandler;
 import com.MA.winner.localDataStorage.models.StockPerformanceData;
+import com.MA.winner.localDataStorage.models.Strategy;
 import com.MA.winner.performanceCalculations.PerfCalculatorHandler;
 
 import java.io.IOException;
@@ -17,7 +18,8 @@ public class StockAnalysisController {
     AnalysisDataHandler analysisDataHandler;
 
 
-    public StockAnalysisController(float maxStockValue, String startDate, String endDate, String sector, float budget) {
+    public StockAnalysisController(float maxStockValue, String startDate, String endDate, String sector,
+                                   float budget, Strategy strategy) {
         this.maxStockValue = maxStockValue;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -27,7 +29,8 @@ public class StockAnalysisController {
                 maxStockValue,
                 startDate,
                 endDate,
-                sector);
+                sector,
+                strategy);
     }
 
     public void run() throws IOException {

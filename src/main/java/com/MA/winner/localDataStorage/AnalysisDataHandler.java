@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import com.MA.winner.localDataStorage.models.StockPerformanceData;
+import com.MA.winner.localDataStorage.models.Strategy;
 import com.MA.winner.utils.Utils;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -17,7 +18,7 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.apache.spark.sql.RowFactory;
 
-import static com.MA.winner.utils.Utils.printAllStockPerformanceData;
+import static com.MA.winner.localDataStorage.models.Strategy.*;
 import static org.apache.spark.sql.functions.*;
 
 public class AnalysisDataHandler {
@@ -28,14 +29,16 @@ public class AnalysisDataHandler {
     private final String startDate;
     private final String endDate;
     private final String sector;
+    private final Strategy strategy;
     protected SparkSession spark;
 
-    public AnalysisDataHandler(Float maxStockValue, String startDate, String endDate, String sector) {
+    public AnalysisDataHandler(Float maxStockValue, String startDate, String endDate, String sector, Strategy strategy) {
         this.allTickersDataHandler = new AllTickersDataHandler();
         this.maxStockValue = maxStockValue;
         this.startDate = startDate;
         this.endDate = endDate;
         this.sector = (sector==null) ? "all" : sector;
+        this.strategy = strategy;
         this.spark = SparkSession.builder()
                 .appName("stocks")
                 .master("local[*]")
@@ -118,6 +121,24 @@ public class AnalysisDataHandler {
                 .drop(col("t2.symbol"));
     }
 
+    public boolean honorStrategy(float[] value) {
+        boolean ans = true;
+        switch (strategy) {
+            case RETURN:
+                ans = value[0] >= 1.0f;
+                break;
+            case STABILITY:
+                ans = value[1] <= 1.0f;
+                break;
+            case BALANCED:
+                break;
+            default:
+                logger.warning("Invalid strategy!");
+                break;
+        }
+        return ans;
+    }
+
     public List<StockPerformanceData> getStocksAnalysisData() throws IOException {
         logger.info("Getting stocks data");
         List<String> tickers = getSp500Tickers();
@@ -128,6 +149,10 @@ public class AnalysisDataHandler {
         List<StockPerformanceData> stockPerformanceDataList = new ArrayList<>();
         List<Row> rows = sparkDF.collectAsList();
         for (Row row : rows) {
+            float[] data = {((Number) row.get(2)).floatValue(), ((Number) row.get(3)).floatValue()};
+            if (!honorStrategy(data)) {
+                continue;
+            }
             StockPerformanceData stockPerformanceData = StockPerformanceData.builder()
                     .symbol((String) row.get(0))
                     .close(((Number) row.get(1)).floatValue())

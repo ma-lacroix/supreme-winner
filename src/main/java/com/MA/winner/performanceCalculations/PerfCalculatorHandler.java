@@ -6,7 +6,6 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.sources.In;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
@@ -118,6 +117,7 @@ public class PerfCalculatorHandler {
     }
 
     public void generateResults() {
+        // TODO: why does this create a heap memory error when I filter out some stocks
         List<Row> rows = new ArrayList<>();
         for (int i = 0; i < numSamples; i++) {
             if (i % 100000 == 0) {
