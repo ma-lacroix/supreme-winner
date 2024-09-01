@@ -4,6 +4,7 @@ import com.MA.winner.localDataStorage.models.StockDataResponse;
 import com.MA.winner.localDataStorage.models.StockMetaDataResponse;
 
 import java.io.IOException;
+import java.io.InvalidObjectException;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -144,6 +145,9 @@ public class AnalysisDataHandler {
         List<String> tickers = getSp500Tickers();
         logger.info(tickers.toString());
         List<Row> dataRows = fetchTickerData(tickers);
+        if (dataRows.isEmpty()) {
+            throw new InvalidObjectException("No stock data was fetched.");
+        }
         Dataset<Row> sparkDF = createSparkDF(dataRows);
         sparkDF = genStocksAnalysisData(sparkDF);
         List<StockPerformanceData> stockPerformanceDataList = new ArrayList<>();

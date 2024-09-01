@@ -33,10 +33,10 @@ public class StockAnalysisController {
                 strategy);
     }
 
-    public void run() throws IOException {
+    public void run() throws Exception {
         List<StockPerformanceData> stockPerformanceDataList = analysisDataHandler.getStocksAnalysisData();
         PerfCalculatorHandler perfCalculatorHandler = new PerfCalculatorHandler(stockPerformanceDataList,
-                5_000_000L, budget);
+                50_000_000L, budget);
         perfCalculatorHandler.generateResults();
     }
 }

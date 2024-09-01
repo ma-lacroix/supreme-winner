@@ -29,6 +29,7 @@ public class PerfCalculatorHandler {
     float budget;
     long numSamples;
     Random random;
+    float maxSharpe;
     protected SparkSession spark;
 
     public PerfCalculatorHandler(List<StockPerformanceData> stockPerformanceDataList, long numSamples, float budget) {
@@ -37,6 +38,7 @@ public class PerfCalculatorHandler {
         this.numSamples = numSamples;
         this.budget = budget;
         this.random = new Random();
+        this.maxSharpe = 0.0f;
         this.spark = SparkSession.builder()
                 .appName("performance")
                 .master("local[*]")
@@ -70,44 +72,28 @@ public class PerfCalculatorHandler {
         return num/denum;
     }
 
-    public Row generatePortolio() {
-        double[] shares = randomShareOfStocks();
-        float sharpe = getSharpeRatio(shares);
-        if (sharpe <= 1.0f) {
-            // Tossing away negatives
-            return null;
+    public double[] generatePortolio() {
+        double[] portfolio = new double[stocksListSize];
+        for (int i = 0; i < numSamples; i++) {
+            if (i % 100000 == 0) {
+                logger.info((int) ((i / (double) numSamples) * 100) + " % done");
+            }
+            double[] shares = randomShareOfStocks();
+            float sharpe = getSharpeRatio(shares);
+            if (sharpe >= maxSharpe) {
+                maxSharpe = sharpe;
+                portfolio = shares;
+            }
         }
-        List<Object> rowElements = new ArrayList<>();
-        for (int i = 0; i < stocksListSize; i++) {
-            rowElements.add(stockPerformanceDataList.get(i).getClose());
-            rowElements.add(stockPerformanceDataList.get(i).getStd());
-            rowElements.add(stockPerformanceDataList.get(i).getRoi());
-            rowElements.add(shares[i]);
-        }
-        rowElements.add(sharpe);
-        return RowFactory.create(rowElements.toArray());
+        return portfolio;
     }
 
-    public StructType generateSchema() {
-        List<StructField> fields = new ArrayList<>();
-        for (StockPerformanceData stockPerformanceData: stockPerformanceDataList) {
-            String tickerName = stockPerformanceData.getSymbol();
-            fields.add(DataTypes.createStructField(tickerName + "_clo", DataTypes.FloatType, false));
-            fields.add(DataTypes.createStructField(tickerName + "_std", DataTypes.FloatType, false));
-            fields.add(DataTypes.createStructField(tickerName + "_roi", DataTypes.FloatType, false));
-            fields.add(DataTypes.createStructField(tickerName + "_sha", DataTypes.DoubleType, false));
-        }
-        fields.add(DataTypes.createStructField("sharpe", DataTypes.FloatType, false));
-        return DataTypes.createStructType(fields);
-    }
-
-    public Map<String, Integer> generateBestPortfolio(Row rowWithMaxSharpe) {
+    public Map<String, Integer> generateBestPortfolio(double[] rowWithMaxSharpe) {
         Map<String, Integer> inv = new HashMap<>();
-        int size = rowWithMaxSharpe.size() - rowWithMaxSharpe.size() % 4;
-        for (int i = 0; i < size; i+=4) {
-            String name = rowWithMaxSharpe.schema().fieldNames()[i].split("_")[0];
-            float close = rowWithMaxSharpe.getFloat(i);
-            double share = rowWithMaxSharpe.getDouble(i + 3);
+        for (int i = 0; i < stocksListSize; i++) {
+            String name = stockPerformanceDataList.get(i).getSymbol();
+            float close = stockPerformanceDataList.get(i).getClose();
+            double share = rowWithMaxSharpe[i];
             int stocks = Math.toIntExact(Math.round((share * budget) / close));
             if (stocks > 0) {
                 inv.put(name, stocks);
@@ -116,29 +102,10 @@ public class PerfCalculatorHandler {
         return inv;
     }
 
-    public void generateResults() {
-        // TODO: why does this create a heap memory error when I filter out some stocks
-        List<Row> rows = new ArrayList<>();
-        for (int i = 0; i < numSamples; i++) {
-            if (i % 100000 == 0) {
-                logger.info((int) ((i / (double) numSamples) * 100) + " % done");
-            }
-            Row portfolio = generatePortolio();
-            if (portfolio != null) {
-                rows.add(portfolio);
-            }
-        }
+    public void generateResults() throws Exception {
+        double[] portfolio = generatePortolio();
         logger.info("100 % done");
-        Dataset<Row> df = spark.createDataFrame(rows, generateSchema());
-        float maxSharpe = df.agg(max("sharpe")).first().getFloat(0);
-        Row rowWithMaxSharpe = df.filter(col("sharpe").equalTo(maxSharpe)).first();
-        System.out.println(rowWithMaxSharpe);
-        for (int i = 0; i < rowWithMaxSharpe.size(); i++) {
-            String name = rowWithMaxSharpe.schema().fieldNames()[i];
-            Object object = rowWithMaxSharpe.get(i);
-            logger.info(name + " " + object);
-        }
-        Map<String, Integer> best = generateBestPortfolio(rowWithMaxSharpe);
+        Map<String, Integer> best = generateBestPortfolio(portfolio);
         printRecommendation(best);
     }
 }
