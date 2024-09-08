@@ -2,15 +2,8 @@ package com.MA.winner.performanceCalculations;
 
 import com.MA.winner.localDataStorage.AnalysisDataHandler;
 import com.MA.winner.localDataStorage.models.StockPerformanceData;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.StructField;
-import org.apache.spark.sql.types.StructType;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -18,10 +11,8 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 import static com.MA.winner.utils.Utils.printRecommendation;
-import static org.apache.spark.sql.functions.col;
-import static org.apache.spark.sql.functions.max;
 
-public class PerfCalculatorHandler {
+public class PerfCalculatorHandler implements PerformanceCalculatorHandler<double[]>  {
 
     private static final Logger logger = Logger.getLogger(AnalysisDataHandler.class.getName());
     List<StockPerformanceData> stockPerformanceDataList;
@@ -72,7 +63,8 @@ public class PerfCalculatorHandler {
         return num/denum;
     }
 
-    public double[] generatePortolio() {
+    @Override
+    public double[] generatePortfolio() {
         double[] portfolio = new double[stocksListSize];
         for (int i = 0; i < numSamples; i++) {
             if (i % 100000 == 0) {
@@ -88,7 +80,8 @@ public class PerfCalculatorHandler {
         return portfolio;
     }
 
-    public Map<String, Integer> generateBestPortfolio(double[] rowWithMaxSharpe) {
+    @Override
+    public Map<String, Integer> fetchBestPortfolio(double[] rowWithMaxSharpe) {
         Map<String, Integer> inv = new HashMap<>();
         for (int i = 0; i < stocksListSize; i++) {
             String name = stockPerformanceDataList.get(i).getSymbol();
@@ -102,10 +95,11 @@ public class PerfCalculatorHandler {
         return inv;
     }
 
-    public void generateResults() throws Exception {
-        double[] portfolio = generatePortolio();
+    @Override
+    public void generateResults() {
+        double[] portfolio = generatePortfolio();
         logger.info("100 % done");
-        Map<String, Integer> best = generateBestPortfolio(portfolio);
+        Map<String, Integer> best = fetchBestPortfolio(portfolio);
         printRecommendation(best);
     }
 }

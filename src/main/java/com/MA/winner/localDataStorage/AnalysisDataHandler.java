@@ -19,7 +19,6 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.apache.spark.sql.RowFactory;
 
-import static com.MA.winner.localDataStorage.models.Strategy.*;
 import static org.apache.spark.sql.functions.*;
 
 public class AnalysisDataHandler {
@@ -64,7 +63,12 @@ public class AnalysisDataHandler {
         List<Row> rows = new ArrayList<>();
         for (String tickerName: tickers) {
             TickerDataHandler tickerDataHandler = new TickerDataHandler(tickerName, startDate, endDate);
-            List<StockDataResponse> stockDataResponses = tickerDataHandler.getTickerData();
+            List<StockDataResponse> stockDataResponses = null;
+            try {
+                stockDataResponses = tickerDataHandler.getTickerData();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             for (StockDataResponse response: stockDataResponses) {
                 rows.add(RowFactory.create(tickerName,
                         response.getDate(),

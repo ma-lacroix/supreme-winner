@@ -1,21 +1,17 @@
 package com.MA.winner.localDataStorage;
 
-import com.MA.winner.localDataStorage.models.StockMetaDataResponse;
 import com.MA.winner.localDataStorage.models.YahooStockPriceRequests;
 import com.MA.winner.localDataStorage.models.StockDataResponse;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import jdk.jshell.spi.ExecutionControl;
+import org.apache.hadoop.shaded.org.apache.http.ConnectionClosedException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.MA.winner.utils.Utils.convertToUnixTimestamp;
@@ -31,7 +27,7 @@ public class TickerDataHandler {
                 .build();
     }
 
-    public List<StockDataResponse> getTickerData() {
+    public List<StockDataResponse> getTickerData() throws IOException {
 
         String urlString = yahooStockPriceRequests.getTickerDataURL();
         try {
@@ -60,9 +56,11 @@ public class TickerDataHandler {
                 List<StockDataResponse> stockMetaDataResponses = iterator.readAll();
                 return stockMetaDataResponses;
             }
+            else {
+                throw new ConnectionClosedException(responseCode + ": " + connection.getResponseMessage());
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return new ArrayList<>();
     }
 }
