@@ -4,23 +4,24 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import static com.MA.winner.utils.Utils.getFmpApiKey;
+
 @Getter
 @Setter
 @Builder
-public class YahooStockPriceRequests {
-
+public class FmpStockPriceRequests {
     private String ticker;
     private String startDate;
     private String endDate;
 
-    public YahooStockPriceRequests(String ticker, String startDate, String endDate) {
+    public FmpStockPriceRequests(String ticker, String startDate, String endDate) {
         this.ticker = ticker;
         this.startDate = startDate;
         this.endDate = endDate;
     }
 
     public String getTickerDataURL() {
-        return "https://query1.finance.yahoo.com/v7/finance/download/" + ticker +
-                "?period1=" + startDate + "&period2=" + endDate + "&interval=1d&events=history";
+        return "https://financialmodelingprep.com/api/v3/historical-price-full/" + ticker +
+                "?apikey=" + getFmpApiKey() + "&from=" + startDate + "&to=" + endDate;
     }
 }

@@ -1,6 +1,7 @@
 package com.MA.winner.controller;
 
 import com.MA.winner.localDataStorage.AnalysisDataHandler;
+import com.MA.winner.localDataStorage.models.FmpStockPriceRequests;
 import com.MA.winner.localDataStorage.models.StockPerformanceData;
 import com.MA.winner.localDataStorage.models.Strategy;
 import com.MA.winner.performanceCalculations.PerfCalculatorHandler;

@@ -1,8 +1,9 @@
 package com.MA.winner.localDataStorage;
 
-import com.MA.winner.localDataStorage.models.YahooStockPriceRequests;
+import com.MA.winner.localDataStorage.models.FmpStockPriceRequests;
 import com.MA.winner.localDataStorage.models.StockDataResponse;
 import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import org.apache.hadoop.shaded.org.apache.http.ConnectionClosedException;
@@ -14,22 +15,21 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
-import static com.MA.winner.utils.Utils.convertToUnixTimestamp;
 
 public class TickerDataHandler {
-    private final YahooStockPriceRequests yahooStockPriceRequests;
+    private final FmpStockPriceRequests fmpStockPriceRequests;
     public TickerDataHandler(String ticker, String startDate, String endDate) {
-        this.yahooStockPriceRequests = YahooStockPriceRequests
+        this.fmpStockPriceRequests = FmpStockPriceRequests
                 .builder()
                 .ticker(ticker)
-                .startDate(convertToUnixTimestamp(startDate))
-                .endDate(convertToUnixTimestamp(endDate))
+                .startDate(startDate)
+                .endDate(endDate)
                 .build();
     }
 
     public List<StockDataResponse> getTickerData() throws IOException {
 
-        String urlString = yahooStockPriceRequests.getTickerDataURL();
+        String urlString = fmpStockPriceRequests.getTickerDataURL();
         try {
             URL url = new URL(urlString);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -48,6 +48,8 @@ public class TickerDataHandler {
                 }
                 in.close();
                 connection.disconnect();
+                // TODO: use Jackson to map response from fmp
+
                 CsvMapper csvMapper = new CsvMapper();
                 CsvSchema csvSchema = csvMapper.schemaFor(StockDataResponse.class).withHeader();
                 MappingIterator<StockDataResponse> iterator = csvMapper.readerFor(StockDataResponse.class)

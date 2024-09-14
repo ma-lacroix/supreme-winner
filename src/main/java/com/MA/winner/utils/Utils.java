@@ -34,5 +34,14 @@ public class Utils {
             System.out.println(key + " " + inv.get(key));
         }
     }
+
+    public static String getFmpApiKey() {
+        String varName = "FMP_KEY";
+        String fmpKey = System.getenv(varName);
+        if (fmpKey == null) {
+            throw new IllegalStateException(varName + " not found. Check environment variables.");
+        }
+        return fmpKey;
+    }
 }
 

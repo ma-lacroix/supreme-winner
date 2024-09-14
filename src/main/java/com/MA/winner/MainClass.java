@@ -10,8 +10,8 @@ public class MainClass {
         System.out.println("Application starts...");
         StockAnalysisController stockAnalysisController = new StockAnalysisController(
                 50.0f,
-                "2024-07-31",
-                "2024-08-31",
+                "2024-09-01",
+                "2024-09-04",
                 "Information Technology",
                 5000.0f,
                 Strategy.BALANCED);
