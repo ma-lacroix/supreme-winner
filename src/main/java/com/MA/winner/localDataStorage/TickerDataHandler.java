@@ -1,6 +1,7 @@
 package com.MA.winner.localDataStorage;
 
 import com.MA.winner.localDataStorage.models.FmpStockPriceRequests;
+import com.MA.winner.localDataStorage.models.StockDailyData;
 import com.MA.winner.localDataStorage.models.StockDataResponse;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,7 +28,7 @@ public class TickerDataHandler {
                 .build();
     }
 
-    public List<StockDataResponse> getTickerData() throws IOException {
+    public List<StockDailyData> getTickerData() throws IOException {
 
         String urlString = fmpStockPriceRequests.getTickerDataURL();
         try {
@@ -42,21 +43,13 @@ public class TickerDataHandler {
                 String inputLine;
 
                 while ((inputLine = in.readLine()) != null) {
-                    String[] elements = inputLine.split(",");
-                    String reconstructedLine = String.join(",", elements);
-                    content.append(reconstructedLine).append("\n");
+                    content.append(inputLine);
                 }
                 in.close();
                 connection.disconnect();
-                // TODO: use Jackson to map response from fmp
-
-                CsvMapper csvMapper = new CsvMapper();
-                CsvSchema csvSchema = csvMapper.schemaFor(StockDataResponse.class).withHeader();
-                MappingIterator<StockDataResponse> iterator = csvMapper.readerFor(StockDataResponse.class)
-                        .with(csvSchema)
-                        .readValues(content.toString());
-                List<StockDataResponse> stockMetaDataResponses = iterator.readAll();
-                return stockMetaDataResponses;
+                ObjectMapper objectMapper = new ObjectMapper();
+                StockDataResponse stockDataResponse = objectMapper.readValue(content.toString(), StockDataResponse.class);
+                return stockDataResponse.getStockDailyDataList();
             }
             else {
                 throw new ConnectionClosedException(responseCode + ": " + connection.getResponseMessage());

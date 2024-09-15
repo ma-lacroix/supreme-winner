@@ -1,6 +1,6 @@
 package com.MA.winner.localDataStorage;
 
-import com.MA.winner.localDataStorage.models.StockDataResponse;
+import com.MA.winner.localDataStorage.models.StockDailyData;
 import com.MA.winner.localDataStorage.models.StockMetaDataResponse;
 
 import java.io.IOException;
@@ -63,13 +63,13 @@ public class AnalysisDataHandler {
         List<Row> rows = new ArrayList<>();
         for (String tickerName: tickers) {
             TickerDataHandler tickerDataHandler = new TickerDataHandler(tickerName, startDate, endDate);
-            List<StockDataResponse> stockDataResponses = null;
+            List<StockDailyData> stockDailyDataRespons = null;
             try {
-                stockDataResponses = tickerDataHandler.getTickerData();
+                stockDailyDataRespons = tickerDataHandler.getTickerData();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            for (StockDataResponse response: stockDataResponses) {
+            for (StockDailyData response: stockDailyDataRespons) {
                 rows.add(RowFactory.create(tickerName,
                         response.getDate(),
                         response.getOpen(),

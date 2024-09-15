@@ -1,25 +1,18 @@
 package com.MA.winner.localDataStorage.models;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
+import java.io.Serializable;
+import java.util.List;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonPropertyOrder({"date","open","high","low","close","adjClose","volume"})
-public class StockDataResponse {
-
-    String date;
-    float open;
-    float high;
-    float low;
-    float close;
-    float adjClose;
-    float volume;
-
+public class StockDataResponse implements Serializable {
+    @JsonProperty("symbol")
+    private String tickerName;
+    @JsonProperty("historical")
+    private List<StockDailyData> stockDailyDataList;
 }
