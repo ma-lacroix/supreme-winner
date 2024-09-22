@@ -10,9 +10,9 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import static com.MA.winner.utils.Utils.printRecommendation;
+import static com.MA.winner.utils.Utils.printSharpeRecommendation;
 
-public class PerfCalculatorHandler implements PerformanceCalculatorHandler<double[]>  {
+public class SharpeCalculatorHandler implements PerformanceCalculatorHandler<double[], Integer>  {
 
     private static final Logger logger = Logger.getLogger(AnalysisDataHandler.class.getName());
     List<StockPerformanceData> stockPerformanceDataList;
@@ -23,7 +23,7 @@ public class PerfCalculatorHandler implements PerformanceCalculatorHandler<doubl
     float maxSharpe;
     protected SparkSession spark;
 
-    public PerfCalculatorHandler(List<StockPerformanceData> stockPerformanceDataList, long numSamples, float budget) {
+    public SharpeCalculatorHandler(List<StockPerformanceData> stockPerformanceDataList, long numSamples, float budget) {
         this.stockPerformanceDataList = stockPerformanceDataList;
         this.stocksListSize = stockPerformanceDataList.size();
         this.numSamples = numSamples;
@@ -100,6 +100,6 @@ public class PerfCalculatorHandler implements PerformanceCalculatorHandler<doubl
         double[] portfolio = generatePortfolio();
         logger.info("100 % done");
         Map<String, Integer> best = fetchBestPortfolio(portfolio);
-        printRecommendation(best);
+        printSharpeRecommendation(best);
     }
 }

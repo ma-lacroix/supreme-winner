@@ -1,5 +1,6 @@
 package com.MA.winner.utils;
 
+import com.MA.winner.localDataStorage.models.MeanInversionResult;
 import com.MA.winner.localDataStorage.models.StockPerformanceData;
 
 import java.text.ParseException;
@@ -29,9 +30,15 @@ public class Utils {
                 ", AVG: " + stockPerformanceData.getAvg());
     }
 
-    public static void printRecommendation(Map<String, Integer> inv) {
+    public static void printSharpeRecommendation(Map<String, Integer> inv) {
         for (String key: inv.keySet()) {
             System.out.println(key + " " + inv.get(key));
+        }
+    }
+
+    public static void printMeanInversionRecommendation(Map<String, MeanInversionResult> inv) {
+        for (String key: inv.keySet()) {
+            System.out.println(key + " " + inv.get(key).toString());
         }
     }
 

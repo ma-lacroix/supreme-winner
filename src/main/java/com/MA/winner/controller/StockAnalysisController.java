@@ -1,12 +1,10 @@
 package com.MA.winner.controller;
 
 import com.MA.winner.localDataStorage.AnalysisDataHandler;
-import com.MA.winner.localDataStorage.models.FmpStockPriceRequests;
 import com.MA.winner.localDataStorage.models.StockPerformanceData;
 import com.MA.winner.localDataStorage.models.Strategy;
-import com.MA.winner.performanceCalculations.PerfCalculatorHandler;
+import com.MA.winner.performanceCalculations.SharpeCalculatorHandler;
 
-import java.io.IOException;
 import java.util.List;
 
 public class StockAnalysisController {
@@ -36,8 +34,8 @@ public class StockAnalysisController {
 
     public void run() throws Exception {
         List<StockPerformanceData> stockPerformanceDataList = analysisDataHandler.getStocksAnalysisData();
-        PerfCalculatorHandler perfCalculatorHandler = new PerfCalculatorHandler(stockPerformanceDataList,
+        SharpeCalculatorHandler sharpeCalculatorHandler = new SharpeCalculatorHandler(stockPerformanceDataList,
                 50_000_000L, budget);
-        perfCalculatorHandler.generateResults();
+        sharpeCalculatorHandler.generateResults();
     }
 }
