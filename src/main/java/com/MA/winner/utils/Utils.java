@@ -5,7 +5,9 @@ import com.MA.winner.localDataStorage.models.StockPerformanceData;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 public class Utils {
@@ -49,6 +51,44 @@ public class Utils {
             throw new IllegalStateException(varName + " not found. Check environment variables.");
         }
         return fmpKey;
+    }
+
+    public static List<StockPerformanceData> getDummyStockPerformanceData() {
+        // Returns a list of fake stock performance data for testing purposes
+        List<StockPerformanceData> dummyStockPerformanceDataList = new ArrayList<>();
+        dummyStockPerformanceDataList.add(StockPerformanceData
+                .builder()
+                .symbol("DUM1")
+                .avg(100.0f)
+                .std(2.5f)
+                .roi(1.03f)
+                .close(10.f)
+                .build());
+        dummyStockPerformanceDataList.add(StockPerformanceData
+                .builder()
+                .symbol("DUM2")
+                .avg(50.0f)
+                .std(1.5f)
+                .roi(0.5f)
+                .close(20.f)
+                .build());
+        dummyStockPerformanceDataList.add(StockPerformanceData
+                .builder()
+                .symbol("DUM3")
+                .avg(130.0f)
+                .std(1.0f)
+                .roi(2.5f)
+                .close(20.f)
+                .build());
+        dummyStockPerformanceDataList.add(StockPerformanceData
+                .builder()
+                .symbol("DUM4")
+                .avg(30.0f)
+                .std(5.0f)
+                .roi(0.1f)
+                .close(33.f)
+                .build());
+        return dummyStockPerformanceDataList;
     }
 }
 

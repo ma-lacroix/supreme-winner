@@ -8,13 +8,15 @@ public class MainClass {
 
     public static void main(String[] args) throws Exception {
         System.out.println("Application starts...");
-        StockAnalysisController stockAnalysisController = new StockAnalysisController(
-                200.0f,
-                "2024-08-01",
-                "2024-09-15",
-                "Energy",
-                5000.0f,
-                Strategy.RETURN);
+        StockAnalysisController stockAnalysisController = StockAnalysisController.builder()
+                .test(true)
+                .maxStockValue(200.0f)
+                .startDate("2024-09-01")
+                .endDate("2024-10-15")
+                .sector("Industrials")
+                .budget(5000.0f)
+                .strategy(Strategy.RETURN)
+                .build();
         stockAnalysisController.run();
     }
 }

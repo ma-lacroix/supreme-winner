@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import com.MA.winner.localDataStorage.models.StockPerformanceData;
 import com.MA.winner.localDataStorage.models.Strategy;
 import com.MA.winner.utils.Utils;
+import lombok.Builder;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
